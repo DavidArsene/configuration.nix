@@ -1,17 +1,45 @@
 {
-  description = "David's NixOS";
+	description = "How does one name a system config?";
 
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-  };
+	inputs = {
+		nixpkgs.url = "nixpkgs"; # unstable
+		nixos-hw.url = "nixos-hardware";
 
-  outputs = { self, nixpkgs, ... }@inputs: {
+		chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
+		nox.url = "github:madsbv/nix-options-search";
 
-    nixosConfigurations.creeper = nixpkgs.lib.nixosSystem {
-      system = "aarch64-linux";
-      modules = [
-        ./configuration.nix
-      ];
-    };
-  };
+		chaotic.inputs.nixpkgs.follows = "nixpkgs";
+		nox.inputs.nixpkgs.follows = "nixpkgs";
+	};
+
+	outputs = {
+		self,
+		nixpkgs,
+		...
+	} @ inputs: {
+		nixosConfigurations = {
+			creeper =
+				nixpkgs.lib.nixosSystem {
+					system = "aarch64-linux";
+					specialArgs = inputs;
+					modules = [
+						./hardware/oci.nix
+						./hosts/creeper.nix
+						./modules/default.nix
+					];
+				};
+
+			legionix =
+				nixpkgs.lib.nixosSystem {
+					system = "x86_64-linux";
+					specialArgs = inputs;
+					modules = [
+						./hardware/legionix.nix
+						./hosts/legionix.nix
+						./modules/desktop.nix
+						./modules/default.nix
+					];
+				};
+		};
+	};
 }
