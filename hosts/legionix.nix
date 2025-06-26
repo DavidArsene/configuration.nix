@@ -1,6 +1,4 @@
 {...}: {
-	networking.hostName = "legionix";
-
 	virtualisation.virtualbox.guest.enable = false; # wtf 2GB
 	virtualisation.waydroid.enable = true;
 
@@ -19,5 +17,8 @@
 	};
 
 	# system.nixos.label = "NixOS 25.11 Unstable";
+	# system.nixos.version = "25.11 Unstable";
+	# system.nixos.codeName = "-";
+	# system.nixos.revision = "";
 	system.stateVersion = "25.11"; # Did you read the comment?
 }

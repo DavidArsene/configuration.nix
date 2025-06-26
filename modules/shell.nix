@@ -1,11 +1,25 @@
-{config, ...}: {
-	environment.shellAliases = {
-		l = "eza";
-		pls = "sudo !!";
+{
+	config,
+	pkgs,
+	...
+}: {
+	users.defaultUserShell = pkgs.fish;
 
-		# TODO: config path
-		nrbs = "nixos-rebuild switch --fast -v --log-format bar-with-logs --flake ~/nixconfig";
-		ndbg = "nix repl $PWD#nixosConfigurations.${config.networking.hostName}";
-		nxgc = "nix-collect-garbage -d";
+	# environment.shellAliases = {
+	# Aliases are displayed as-is
+	programs.fish.shellAliases = {
+		l = "eza -lah@MF --color-scale --icons --hyperlink --group-directories-first --time-style relative";
+		nrb = "nixos-rebuild --no-reexec -v --log-format bar-with-logs";
+	};
+	# Abbreviations are expanded at runtime
+	programs.fish.shellAbbrs = {
+		ltot = "l --total-size";
+
+		nrba = "nrb dry-build";
+		nrbs = "nrb --sudo switch";
+
+		# nix repl with preloaded flake and system config
+		ndbg = "nix repl $PWD#nixosConfigurations.${config.networking.hostName} $PWD";
+		ngc = "sudo nix-collect-garbage -d";
 	};
 }

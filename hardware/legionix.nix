@@ -9,7 +9,9 @@
 	];
 
 	boot.initrd = {
-		availableKernelModules = ["nvme" "xhci_pci" "thunderbolt" "usbhid" "sdhci_pci"]; # "usb_storage""sd_mod"
+		# ata_piix and sr_mod were added on VBox
+		availableKernelModules = ["nvme" "xhci_pci" "usbhid" "sdhci_pci" "hid_generic" "hid_lenovo"];
+		includeDefaultModules = false;
 		luks.devices."luks-root" = {
 			bypassWorkqueues = true;
 			allowDiscards = true;
@@ -19,23 +21,21 @@
 	boot.kernelModules = ["kvm-amd"];
 	boot.loader.efi.canTouchEfiVariables = true;
 
-	# Fix startup ACPI errors
-	boot.kernelParams = ["acpi_osi=\"!Windows2020\""];
-	boot.blacklistedKernelModules = ["sp5100_tco"]; # watchdog
+	# Fix startup ACPI errors - nope
+	boot.kernelParams = ["acpi_osi=\"Linux\""];
+	# boot.blacklistedKernelModules = ["sp5100_tco"]; # watchdog
 
 	fileSystems."/" = {
-		device = "/dev/dm-0"; # Device mapped by LUKS
+		device = "/dev/dm-0"; # LUKS mapping
 		fsType = "ext4";
 		options = [
 			## TODO move to common
 			"defaults"
 			"noatime"
 			"commit=30"
-			# "journal_async_commit" only w/o data=ordered
+			# "journal_async_commit"
+			# only w/o data=ordered
 			"lazytime"
-
-			# ext4-specific
-			"noquota" # needed?
 		];
 	};
 
@@ -66,8 +66,9 @@
 			# prime.offload.enable = true;
 			# prime.offload.enableOffloadCmd = true;
 			# dynamicBoost.enable = true;
+			# package = null;#pkgs.linuxPackages_cachyos.nvidia_x11;
 		};
-		nvidiaOptimus.disable = true;
+		# nvidiaOptimus.disable = true;
 
 		usbStorage.manageShutdown = true;
 	};
@@ -78,9 +79,19 @@
 	#   };
 
 	powerManagement.enable = true;
-	powerManagement.powertop.enable = false;
+	# TODO: make this static
+	powerManagement.powertop.enable = true;
+	# /usb/devices/1-5/power/control on not auto - keyboard
 
-	systemd.services.bbswitch.enable = lib.mkForce false;
+	# boot.kernelPackages = pkgs.linuxPackages_cachyos;#specialArgs.chaotic.unrestrictedPackages.x86_64-linux.linuxPackages_cachyos;
 
-	nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+	# Manual blacklist to abvoid nvidiaOptimus.disable which enables bbswitch
+	boot.blacklistedKernelModules = [
+		"sp5100_tco" # watchdog
+		"nouveau"
+		"nvidia"
+		"nvidiafb"
+		"nvidia-drm"
+		"nvidia-modeset"
+	];
 }

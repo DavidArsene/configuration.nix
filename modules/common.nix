@@ -1,4 +1,9 @@
-{pkgs, ...}: {
+{
+	config,
+	lib,
+	pkgs,
+	...
+}: {
 	### TODO: Add env NIXOS_CONFIG
 	boot.kernelParams = [
 		"mitigations=off"
@@ -8,8 +13,8 @@
 		# Debatable results
 		# "preempt=full"
 	];
-	boot.kernelPackages = pkgs.linuxPackages_latest;
-	
+	boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
+
 	systemd.extraConfig = "StatusUnitFormat=combined";
 
 	time.timeZone = "Europe/Bucharest";
@@ -35,7 +40,7 @@
 	];
 	i18n.inputMethod.enableGtk3 = false;
 
-	users.users.david = {
+	users.users.${config.users.flakeGlobal} = {
 		isNormalUser = true;
 		description = "David";
 		extraGroups = ["networkmanager" "wheel"];
@@ -54,4 +59,9 @@
 			# keepEnv = true;
 		}
 	];
+
+	# TODO move
+	# boot.kernel.sysctl = {
+	# 	"centisex"
+	# };
 }

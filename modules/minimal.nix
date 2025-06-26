@@ -12,7 +12,6 @@
 
 	boot.tmp.useTmpfs = true;
 	boot.tmp.tmpfsHugeMemoryPages = "within_size";
-	# boot.tmp.tmpfsSize
 
 	#nixpkgs.overlays = [
 	#  (final: prev: { stdenv = prev.stdenvNoCC; })
@@ -20,7 +19,6 @@
 
 	networking.firewall.enable = false;
 
-	# programs.nano.enable = false;
 	programs.git.package = pkgs.gitMinimal;
 	programs.firefox.wrapperConfig = {
 		speechSynthesisSupport = false;
@@ -34,9 +32,16 @@
 		xwaylandvideobridge
 	];
 
-	xdg.mime.enable = lib.mkForce false;
+	# pkgs.ibus.package = lib.mkForce pkgs.nano;
 
-	# Should be already provided by hardware-configuration.nix
+	# environment.packages = lib.mk
+
+	# Too much
+	# fonts.fontconfig.enable = false;
+	# xdg.mime.enable = lib.mkForce false;
+
+	# Enable for each system in hardware-configuration.nix
+	# after ensuring all required modules are present
+	# Also remember VMs
 	# boot.initrd.includeDefaultModules = false;
-	# TODO: kbd no work
 }

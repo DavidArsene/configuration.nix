@@ -1,23 +1,26 @@
 {
+	config,
 	pkgs,
-	specialArgs,
 	...
 }: {
+	# TODO: use chaotic v4
 	environment.systemPackages = with pkgs; [
 		# Nix
 		alejandra
 		nix-tree
 		nixd
 		nh
-		nix-du
-		nix-fast-build
-		nix-inspect
+		# nix-du
+		# nix-fast-build
+		# nix-inspect
 		nix-weather
 		nvd
-		specialArgs.nox.packages.x86_64-linux.default
+		# specialArgs.nox.packages.x86_64-linux.default
 
 		# Modern utilities
+		atuin
 		bat
+		broot
 		btop
 		curlie
 		eza
@@ -27,6 +30,7 @@
 		ncdu
 		nushell
 		ripgrep #-all?
+		zoxide
 
 		# Everything else
 		wget
@@ -38,6 +42,7 @@
 		efibootmgr
 		sbctl
 		sbsigntool
+		smartmontools
 		tinyxxd
 	];
 
@@ -57,7 +62,18 @@
 	#   enableSSHSupport = true;
 	# };
 
-	programs.git.enable = true;
+	programs.fish = {
+		enable = true;
+		useBabelfish = true;
+	};
+
+	programs.git = {
+		enable = true;
+		config = {
+			user.name = "DavidArsene";
+			user.email = "80218600+DavidArsene@users.noreply.github.com";
+		};
+	};
 
 	programs.yazi = {
 		enable = true;
@@ -73,7 +89,7 @@
 
 	services.code-server = {
 		enable = false; # true
-		user = "david"; # TODO
+		user = config.users.flakeGlobal;
 		group = "users";
 		host = "0.0.0.0"; # Allow access from outside
 		# port = 4444;
