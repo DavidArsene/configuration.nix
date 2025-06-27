@@ -12,7 +12,7 @@
 		nh
 		# nix-du
 		# nix-fast-build
-		# nix-inspect
+		nix-inspect
 		nix-weather
 		nvd
 		# specialArgs.nox.packages.x86_64-linux.default
@@ -23,6 +23,7 @@
 		broot
 		btop
 		curlie
+		delta
 		eza
 		fastfetch
 		fd
@@ -37,13 +38,16 @@
 		gh
 		iotop-c
 		powertop
+		smartmontools
+		strace
+		strace-analyzer
+		tinyxxd
+
 		efivar
 		efitools
 		efibootmgr
 		sbctl
 		sbsigntool
-		smartmontools
-		tinyxxd
 	];
 
 	environment.etc."ncdu.conf".text = ''
@@ -65,13 +69,21 @@
 	programs.fish = {
 		enable = true;
 		useBabelfish = true;
+		# generateCompletions = true;
 	};
 
 	programs.git = {
 		enable = true;
 		config = {
+			# TODO: cannot be read from VSCode FSHenv
 			user.name = "DavidArsene";
 			user.email = "80218600+DavidArsene@users.noreply.github.com";
+
+			core.pager = "delta";
+			interactive.diffFilter = "delta --color-only";
+			delta.line-numbers = true;
+			delta.navigate = true;
+			merge.conflictstyle = "zdiff3";
 		};
 	};
 

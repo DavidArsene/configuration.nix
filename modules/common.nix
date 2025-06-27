@@ -12,6 +12,8 @@
 		# "nvme_core.default_ps_max_latency_us=0"
 		# Debatable results
 		# "preempt=full"
+		"iommu.passthrough=1" # TODO: Default?
+		"iommu=pt" # TODO: ^^^
 	];
 	boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
 
@@ -48,17 +50,22 @@
 	};
 	users.mutableUsers = false;
 
+	# Download more RAM!
+	zramSwap = {
+		enable = true;
+		priority = 100;
+		memoryPercent = 66;
+	};
+
+	security.doas.enable = true;
 	# security.sudo.enable = false;
 	security.sudo.wheelNeedsPassword = false;
-	security.doas.enable = true;
-	security.doas.extraRules = [
-		{
-			groups = ["wheel"];
-			noLog = true;
-			noPass = true;
-			# keepEnv = true;
-		}
-	];
+	security.doas.wheelNeedsPassword = false;
+	
+	environment.etc."doas.conf".text = lib.mkForce ''
+		permit nopass nolog keepenv root :wheel
+	'';
+	# security.pam.services
 
 	# TODO move
 	# boot.kernel.sysctl = {

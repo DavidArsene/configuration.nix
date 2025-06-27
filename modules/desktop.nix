@@ -27,15 +27,17 @@
 	};
 
 	# Recommended by Darkly
-	# KDE Settings will not work anymore; use Qt6 Settings
-	qt.platformTheme = "qt5ct";
+	# KDE Settings will not work anymore; use `Qt6 Settings`
+	# qt.platformTheme = "qt5ct";
+	qt.style = "kvantum";
 
 	security.rtkit.enable = true;
 
 	environment.systemPackages = with pkgs; [
 		# KDE
-		kdePackages.kate
 		kdePackages.filelight
+		kdePackages.kate
+		kdePackages.kdeconnect-kde
 		kdePackages.yakuake
 		qdirstat
 		supergfxctl-plasmoid

@@ -12,7 +12,7 @@
 			auto-allocate-uids = true;
 			auto-optimise-store = true;
 			builders-use-substitutes = true;
-			experimental-features = ["auto-allocate-uids" "nix-command" "flakes"];
+			experimental-features = ["auto-allocate-uids" "nix-command" "flakes" "local-overlay-store"];
 			flake-registry = "";
 			fallback = false;
 			# keep-derivations = false;
@@ -23,17 +23,20 @@
 			warn-dirty = false;
 			trusted-substituters = [
 				# Nix Community
-				# "https://nix-community.cachix.org"
+				"https://nix-community.cachix.org"
 				# linux-cachyos
-				# "https://chaotic-nyx.cachix.org"
+				#" https://chaotic-nyx.cachix.org"
 				# DetSys Nix
 				"https://install.determinate.systems"
+				# NixOS
+				"https://cache.nixos.org"
 			];
 			trusted-users = ["@wheel"];
 
 			lazy-trees = true;
 		}; # DetSys Nix  ^ and v
 		package = specialArgs.nix.packages.${pkgs.system}.default;
+		# package = pkgs.lix;
 		registry.nixpkgs.flake = specialArgs.nixpkgs;
 	};
 	nixpkgs.config.allowUnfree = true;
@@ -49,5 +52,8 @@
 	environment.localBinInPath = true;
 	environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
+	# TODO
+	# services.sysusers.enable = true; or userborn
+	# system.etc.overlay.enable = true;
 	system.etc.overlay.mutable = false;
 }

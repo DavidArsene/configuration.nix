@@ -30,8 +30,9 @@
 						modules/programs.nix
 						modules/shell.nix
 
-						# TODO: does order matter?
 						modules/minimal.nix
+						# pa-pa-para
+						modules/pa-ra-no-i-a.nix
 					];
 			};
 	in {
@@ -68,8 +69,12 @@
 
 		## TODO use nixos-unstable;; 41da = weekly 2025-06-17
 		nixpkgs.url = "github:NixOS/nixpkgs?ref=41da1e3ea8e23e094e5e3eeb1e6b830468a7399e";
+		# nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
 		nixos-hw.url = "github:NixOS/nixos-hardware";
+
+		treefmt-nix.url = "github:numtide/treefmt-nix";
+		treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
 
 		# nox.url = "github:madsbv/nix-options-search";
 		# nox.inputs.nixpkgs.follows = "nixpkgs";
