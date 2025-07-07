@@ -30,17 +30,20 @@
 		micro
 		ncdu
 		nushell
-		ripgrep #-all?
+		ripgrep
+		superfile
 		zoxide
 
 		# Everything else
-		wget
+		fatrace
 		gh
 		iotop-c
 		powertop
+		rustup
 		smartmontools
 		strace
 		strace-analyzer
+		sysdig
 		tinyxxd
 
 		efivar
@@ -66,10 +69,10 @@
 	#   enableSSHSupport = true;
 	# };
 
-	programs.fish = {
+	programs.java = {
 		enable = true;
-		useBabelfish = true;
-		# generateCompletions = true;
+		package = pkgs.zulu24;
+		# binfmt = true;
 	};
 
 	programs.git = {
@@ -90,7 +93,7 @@
 	programs.yazi = {
 		enable = true;
 		settings.yazi = {
-			manager = {
+			mgr = {
 				sort_by = "natural";
 				sort_dir_first = true;
 				linemode = "size";

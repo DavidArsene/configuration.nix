@@ -2,6 +2,7 @@
 	config,
 	lib,
 	pkgs,
+	specialArgs,
 	...
 }: {
 	## <profiles/minimal.nix>
@@ -12,7 +13,7 @@
 		doc.enable = lib.mkForce false;
 		info.enable = lib.mkForce false;
 		man.enable = lib.mkForce false;
-		man.generateCaches = lib.mkForce false;
+		# man.generateCaches = lib.mkForce false;
 		# TODO: doesn't appear to work
 		man.man-db.skipPackages = lib.mkForce config.environment.systemPackages;
 		nixos.enable = lib.mkForce false;
@@ -27,8 +28,7 @@
 		# -_- trying to avoid Perl is futile
 		less.lessopen = lib.mkForce null;
 		command-not-found.enable = lib.mkForce false;
-		# TODO: update nixpkgs
-		# fish.generateCompletions = lib.mkForce false;
+		fish.generateCompletions = lib.mkDefault false;
 	};
 
 	services = {
@@ -47,8 +47,12 @@
 
 	## </profiles/minimal.nix>
 
-	boot.tmp.useTmpfs = true;
-	boot.tmp.tmpfsHugeMemoryPages = "within_size";
+	boot.tmp = {
+		# useTmpfs = true;
+		# tmpfsHugeMemoryPages = "within_size";
+
+		useZram = true;
+	};
 
 	#nixpkgs.overlays = [
 	#  (final: prev: { stdenv = prev.stdenvNoCC; })
@@ -86,4 +90,11 @@
 	# boot.initrd.includeDefaultModules = false;
 
 	#TODO: ensure-all-wrappers-paths-exist
+	# https://www.reddit.com/r/NixOS/comments/19595vc/comment/khzdgw8
+	environment.etc = builtins.listToAttrs (builtins.map (input:
+        lib.attrsets.nameValuePair "sources/${input}" {
+          enable = true;
+          source = specialArgs.${input};
+          mode = "symlink";
+        }) (builtins.attrNames specialArgs)); # inputs
 }

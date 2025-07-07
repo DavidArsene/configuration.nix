@@ -1,7 +1,8 @@
 {
 	config,
+	lib,
+	nixpkgs,
 	pkgs,
-	specialArgs,
 	...
 }: {
 	nix = {
@@ -12,7 +13,7 @@
 			auto-allocate-uids = true;
 			auto-optimise-store = true;
 			builders-use-substitutes = true;
-			experimental-features = ["auto-allocate-uids" "nix-command" "flakes" "local-overlay-store"];
+			experimental-features = ["auto-allocate-uids" "nix-command" "flakes"];# "local-overlay-store"];
 			flake-registry = "";
 			fallback = false;
 			# keep-derivations = false;
@@ -25,7 +26,7 @@
 				# Nix Community
 				"https://nix-community.cachix.org"
 				# linux-cachyos
-				#" https://chaotic-nyx.cachix.org"
+				"https://chaotic-nyx.cachix.org"
 				# DetSys Nix
 				"https://install.determinate.systems"
 				# NixOS
@@ -33,11 +34,11 @@
 			];
 			trusted-users = ["@wheel"];
 
-			lazy-trees = true;
+			#lazy-trees = true;
 		}; # DetSys Nix  ^ and v
-		package = specialArgs.nix.packages.${pkgs.system}.default;
-		# package = pkgs.lix;
-		registry.nixpkgs.flake = specialArgs.nixpkgs;
+		#package = specialArgs.nix.packages.${pkgs.system}.default;
+		package = pkgs.lix;
+		registry.nixpkgs.flake = nixpkgs;
 	};
 	nixpkgs.config.allowUnfree = true;
 	# nixpkgs.flake.setNixPath = false; # TODO:
@@ -52,8 +53,12 @@
 	environment.localBinInPath = true;
 	environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
-	# TODO
-	# services.sysusers.enable = true; or userborn
+	# TODO: Requires systemd in initrd, ruins my initrd-less boot plans
 	# system.etc.overlay.enable = true;
-	system.etc.overlay.mutable = false;
+	# system.etc.overlay.mutable = false;
+
+	# I wish
+	# system.forbiddenDependenciesRegexes = [ "-dev$" ];
+	system.systemBuilderArgs.localeArchive = lib.mkForce "";
+	# system.nixos.label = ;
 }

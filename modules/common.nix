@@ -6,7 +6,8 @@
 }: {
 	### TODO: Add env NIXOS_CONFIG
 	boot.kernelParams = [
-		"mitigations=off"
+		# TODO: slower on Zen 4?
+		# "mitigations=off"
 		"nowatchdog"
 		# Disable SSD power-saving for lower latency
 		# "nvme_core.default_ps_max_latency_us=0"
@@ -14,6 +15,8 @@
 		# "preempt=full"
 		"iommu.passthrough=1" # TODO: Default?
 		"iommu=pt" # TODO: ^^^
+
+		# "earlyprintk=vga"
 	];
 	boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
 

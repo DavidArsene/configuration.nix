@@ -1,5 +1,5 @@
 {
-	config,
+	kwin-blur,
 	pkgs,
 	...
 }: {
@@ -17,8 +17,8 @@
 		# xserver.enable = true;
 
 		displayManager.sddm.enable = true;
-		displayManager.autoLogin.enable = true;
-		displayManager.autoLogin.user = config.users.flakeGlobal;
+		# displayManager.autoLogin.enable = true;
+		# displayManager.autoLogin.user = config.users.flakeGlobal;
 
 		desktopManager.plasma6.enable = true;
 		desktopManager.plasma6.enableQt5Integration = false;
@@ -29,7 +29,7 @@
 	# Recommended by Darkly
 	# KDE Settings will not work anymore; use `Qt6 Settings`
 	# qt.platformTheme = "qt5ct";
-	qt.style = "kvantum";
+	# qt.style = "kvantum";
 
 	security.rtkit.enable = true;
 
@@ -39,22 +39,40 @@
 		kdePackages.kate
 		kdePackages.kdeconnect-kde
 		kdePackages.yakuake
+		kdePackages.kdevelop
+		# klassy
 		qdirstat
 		supergfxctl-plasmoid
 		darkly
-		# specialArgs.kwin-effects-forceblur.packages.${pkgs.system}.default
+		# kwin-blur.packages.${pkgs.system}.default
+		qownnotes
+
+		fusuma
+		(keystore-explorer.override {
+			# TODO: global override
+			jdk = pkgs.zulu24;
+		})
+		# (samba.override {})
 
 		# Other apps
+		# cromite
+		ungoogled-chromium
 		amdgpu_top
-		waydroid-helper
+		# waydroid-helper
 		vscodium-fhs
 		trayscale
 		# onlyoffice-desktopeditors
 		# libreoffice-qt6-fresh-unwrapped
+		uefisettings
+		uefitool
 
 		# CLI
 		lenovo-legion
 		s0ix-selftest-tool
+
+		pciutils
+		usbtop
+		usbutils
 
 		# stdenv
 	];
