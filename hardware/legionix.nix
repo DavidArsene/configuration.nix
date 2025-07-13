@@ -1,6 +1,6 @@
 {
-	chaotic,
 	config,
+	lib,
 	pkgs,
 	...
 }: {
@@ -14,11 +14,25 @@
 		kernelModules = ["kvm-amd"]; # "zenpower"];
 		loader.efi.canTouchEfiVariables = true;
 
-		# Fix startup ACPI errors; 2021 kills touchpad
+		# Fix startup ACPI errors; TODO: find correct year
 		# amd_pstate from common/cpu/amd/pstate.nix
 		kernelParams = [''acpi_osi="!"'' ''acpi_osi="Windows 2015"'' "amd_pstate=active"];
 
-		# kernelPackages = chaotic.unrestrictedPackages.x86_64-linux.linuxPackages_cachyos;
+		kernelPackages =
+			pkgs.callPackage ../modules/cachyos/default.nix {
+				inherit pkgs lib;
+
+				basicCachy = true;
+				mArch = "ZEN4";
+				cpuSched = "eevdf";
+				ticksHz = 500;
+				tickRate = "full";
+				preempt = "full";
+				# withDAMON = false;
+				withNTSync = true;
+				withHDR = false;
+				withoutDebug = true;
+			};
 
 		# Manual blacklist to abvoid nvidiaOptimus.disable which enables bbswitch
 		blacklistedKernelModules = [
@@ -124,13 +138,15 @@
 	services.fstrim.enable = true;
 	# </nixos-hardware>
 
-	services.fprintd = {
-		enable = true;
-		tod = {
-			enable = true;
-			driver = pkgs.callPackage ../modules/libfprint-2-tod1-fpc.nix { };
-		};
-	};
+	# services.fprintd = {
+	# 	enable = true;
+	# 	package = pkgs.nur.repos.fym998.libfprint-fpcmoh;
+	# };
 
-	# services.udev.packages = [config.services.fprintd.tod.driver];
+	# services.udev.packages = [pkgs.nur.repos.fym998.libfprint-fpcmoh];
+
+	# systemd.services.fprintd = {
+	# 	wantedBy = ["multi-user.target"];
+	# 	serviceConfig.Type = "simple";
+	# };
 }

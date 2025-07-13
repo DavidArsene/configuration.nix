@@ -1,10 +1,10 @@
-{lib, ...}: {
-	fileSystems."/tmp/nix/.rw-store" =
-		lib.mkImageMediaOverride {
-			fsType = "tmpfs";
-			options = ["mode=0755" "size=16G"];
-			neededForBoot = true;
-		};
+{...}: {
+	# fileSystems."/tmp/nix/.rw-store" = {
+	# 	device = "nix-store";
+	# 	fsType = "tmpfs";
+	# 	options = ["mode=0755" "size=16G"];
+	# 	neededForBoot = true;
+	# };
 	# fileSystems."/tmp/nix/.ro-store" =
 	# 	lib.mkImageMediaOverride
 	# 	{
@@ -13,21 +13,21 @@
 	# 		options = ["ro"];
 	# 		neededForBoot = true;
 	# 	};
+
 	# # TODO: ENABLE
-	# fileSystems."/nix/store" =
-	# 	lib.mkImageMediaOverride
-	# 	{
-	# 		fsType = "overlay";
-	# 		device = "overlay";
-	# 		options = [
-	# 			"lowerdir=/nix/store"
-	# 			"upperdir=/tmp/nix/.rw-store/store"
-	# 			"workdir=/tmp/nix/.rw-store/work"
-	# 		];
-	# 		depends = [
-	# 			"/nix/store"
-	# 			"/tmp/nix/.rw-store/store"
-	# 			"/tmp/nix/.rw-store/work"
-	# 		];
-	# 	};
+			# fileSystems."/nix/store" = {
+			# 	# device = "overlay";
+			# 	# fsType = "overlay";
+			# 	overlay = {
+			# 		lowerdir = ["/nix/store"]; # lol
+			# 		upperdir = "/tmp/nixnup";
+			# 		workdir = "/tmp/nixwk";
+			# 	};
+			# 	neededForBoot?
+			#   depends ?
+			# };
+	# Not needed because of the overlay
+	#boot.readOnlyNixStore = false;
+	# boot.nixStoreMountOpts=["nosuid" "nodev"];
+
 }

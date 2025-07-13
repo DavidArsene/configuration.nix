@@ -12,8 +12,8 @@
 		nh
 		# nix-du
 		# nix-fast-build
-		nix-inspect
-		nix-weather
+		# nix-inspect
+		# nix-weather
 		nvd
 		# specialArgs.nox.packages.x86_64-linux.default
 
@@ -36,6 +36,7 @@
 
 		# Everything else
 		fatrace
+		file
 		gh
 		iotop-c
 		powertop

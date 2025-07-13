@@ -29,6 +29,8 @@
 		less.lessopen = lib.mkForce null;
 		command-not-found.enable = lib.mkForce false;
 		fish.generateCompletions = lib.mkDefault false;
+
+		# xwayland.enable = lib.mkForce false;
 	};
 
 	services = {
@@ -52,6 +54,7 @@
 		# tmpfsHugeMemoryPages = "within_size";
 
 		useZram = true;
+		zramSettings.zram-size = "ram * 1";
 	};
 
 	#nixpkgs.overlays = [
@@ -67,6 +70,7 @@
 
 	services.orca.enable = false;
 	services.speechd.enable = false;
+	services.printing.enable = lib.mkForce false;
 
 	environment.plasma6.excludePackages = with pkgs.kdePackages; [
 		# aurorae
@@ -91,10 +95,12 @@
 
 	#TODO: ensure-all-wrappers-paths-exist
 	# https://www.reddit.com/r/NixOS/comments/19595vc/comment/khzdgw8
-	environment.etc = builtins.listToAttrs (builtins.map (input:
-        lib.attrsets.nameValuePair "sources/${input}" {
-          enable = true;
-          source = specialArgs.${input};
-          mode = "symlink";
-        }) (builtins.attrNames specialArgs)); # inputs
+	# environment.etc = builtins.listToAttrs (builtins.map (input:
+    #     lib.attrsets.nameValuePair "sources/${input}" {
+    #       enable = true;
+    #       source = specialArgs.${input};
+    #       mode = "symlink";
+    #     }) (builtins.attrNames specialArgs)); # inputs
+
+	# system.extraDependencies = specialArgs;
 }

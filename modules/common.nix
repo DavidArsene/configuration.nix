@@ -56,17 +56,17 @@
 	# Download more RAM!
 	zramSwap = {
 		enable = true;
-		priority = 100;
-		memoryPercent = 66;
+		priority = 150;
+		memoryPercent = 100;
 	};
 
 	security.doas.enable = true;
 	# security.sudo.enable = false;
 	security.sudo.wheelNeedsPassword = false;
-	security.doas.wheelNeedsPassword = false;
 	
 	environment.etc."doas.conf".text = lib.mkForce ''
-		permit nopass nolog keepenv root :wheel
+permit nopass nolog keepenv root :wheel
+
 	'';
 	# security.pam.services
 

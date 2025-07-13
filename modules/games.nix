@@ -6,8 +6,10 @@
 				# gamemodeSupport = false;
 				textToSpeechSupport = false;
 				jdks = [
+					# zulu23
 					zulu24
 				];
 			})
+			umu-launcher-unwrapped
 	];
 }

@@ -1,5 +1,9 @@
 {
-	outputs = {nixpkgs, ...} @ inputs: let
+	outputs = {
+		nixpkgs,
+		pinpkgs,
+		...
+	} @ inputs: let
 		inherit (nixpkgs) lib;
 		mkSystem = {
 			system,
@@ -7,12 +11,31 @@
 			extraModules,
 		}:
 			lib.nixosSystem {
-				# inherit system;
-				specialArgs = inputs;
-				# // { modulesPath = "${nixpkgs}/nixos/modules"; };
+				specialArgs =
+					inputs
+					// {
+						modulesPath = "${nixpkgs}/nixos/modules";
+						inherit pinpkgs;
+						pinned =
+							import pinpkgs {
+								inherit system;
+								config.allowUnfree = true;
+							};
+					};
 				modules =
 					extraModules
 					++ [
+						./hosts/${hostName}.nix
+						modules/common.nix
+						modules/nix.nix
+						modules/programs.nix
+						modules/shell.nix
+
+						modules/minimal.nix
+						# pa-pa-para
+						modules/pa-ra-no-i-a.nix
+
+						inputs.nur.modules.nixos.default
 						{
 							config.networking.hostName = hostName;
 							config.nixpkgs.hostPlatform = system;
@@ -23,15 +46,17 @@
 									default = "david";
 								};
 						}
-						./hosts/${hostName}.nix
-						modules/common.nix
-						modules/nix.nix
-						modules/programs.nix
-						modules/shell.nix
-
-						modules/minimal.nix
-						# pa-pa-para
-						modules/pa-ra-no-i-a.nix
+						# ({pinned, ...}: {
+						# 		nixpkgs.overlays = [
+						# 			(final: prev: {
+						# 					kde = pinned.kde;
+						# 					applications.kde = pinned.applications.kde;
+						# 					kdePackages = pinned.kdePackages;
+						# 					libsForQt6 = pinned.libsForQt6;
+						# 					plasma-desktop = pinned.plasma-desktop;
+						# 				})
+						# 		];
+						# 	})
 					];
 			};
 	in {
@@ -67,9 +92,12 @@
 		# nix.inputs.nixpkgs-regression.follows = "";
 		# nix.inputs.git-hooks-nix.follows = "";
 
-		## TO-DO use nixos-unstable;; 41da = weekly 2025-06-17
-		nixpkgs.url = "github:NixOS/nixpkgs?ref=30e2e285";
-		# nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+		nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+		pinpkgs.url = "github:NixOS/nixpkgs/30e2e285";
+
+		nur.url = "github:nix-community/NUR";
+		nur.inputs.nixpkgs.follows = "nixpkgs";
 
 		treefmt-nix.url = "github:numtide/treefmt-nix";
 		treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
@@ -77,18 +105,7 @@
 		# nox.url = "github:madsbv/nix-options-search";
 		# nox.inputs.nixpkgs.follows = "nixpkgs";
 
-		chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
-		chaotic.inputs = {
-			home-manager.follows = "";
-			flake-schemas.follows = "";
-			jovian.follows = "";
-			# not recommended, may invalidate cache
-			# nixpkgs.follows = "nixpkgs";
-		};
-
-		# kwin-blur = {
-		# 	url = "github:taj-ny/kwin-effects-forceblur";
-		# 	inputs.nixpkgs.follows = "nixpkgs";
-		# };
+		kwin-blur.url = "github:taj-ny/kwin-effects-forceblur";
+		kwin-blur.inputs.nixpkgs.follows = "nixpkgs";
 	};
 }

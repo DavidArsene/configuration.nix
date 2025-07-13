@@ -1,17 +1,27 @@
 {
 	kwin-blur,
 	pkgs,
+	pinned,
 	...
 }: {
 	# Use NetworkManager on desktop for easy Wi-Fi
 	networking.networkmanager = {
 		enable = true;
-		enableDefaultPlugins = false;
+		# enableDefaultPlugins = false;
 		dns = "systemd-resolved";
+		plugins = [];
 
 		wifi.backend = "iwd";
 		wifi.powersave = true;
 	};
+
+	# disabledModules = [
+	# 	"services/desktop-managers/plasma6.nix"
+	# ];
+
+	# imports = [
+	# 	"${pinpkgs}/nixos/modules/services/desktop-managers/plasma6.nix"
+	# ];
 
 	services = {
 		# xserver.enable = true;
@@ -31,55 +41,71 @@
 	# qt.platformTheme = "qt5ct";
 	# qt.style = "kvantum";
 
-	security.rtkit.enable = true;
+	# TODO: ?
+	# security.rtkit.enable = true;
 
-	environment.systemPackages = with pkgs; [
+	environment.systemPackages =
 		# KDE
-		kdePackages.filelight
-		kdePackages.kate
-		kdePackages.kdeconnect-kde
-		kdePackages.yakuake
-		kdePackages.kdevelop
-		# klassy
-		qdirstat
-		supergfxctl-plasmoid
-		darkly
-		# kwin-blur.packages.${pkgs.system}.default
-		qownnotes
+		(with pinned; with pinned.kdePackages; [
+				filelight
+				kate
+				kdeconnect-kde
+				yakuake
+				kdevelop
+				# plasma-sdk
 
-		fusuma
-		(keystore-explorer.override {
-			# TODO: global override
-			jdk = pkgs.zulu24;
-		})
-		# (samba.override {})
+				qownnotes
+				qdirstat
+				supergfxctl-plasmoid
 
-		# Other apps
-		# cromite
-		ungoogled-chromium
-		amdgpu_top
-		# waydroid-helper
-		vscodium-fhs
-		trayscale
-		# onlyoffice-desktopeditors
-		# libreoffice-qt6-fresh-unwrapped
-		uefisettings
-		uefitool
+				# darkly
+				# pkgs.nur.repos.shadowrz.klassy-qt6
+				kwin-blur.packages.${pkgs.system}.default
+			])
+		++ (with pkgs; [
+				(keystore-explorer.override {
+						# TODO: global override
+						jdk = pkgs.zulu24;
+					})
+				(samba.override {
+						enableLDAP = true;
+						enableProfiling = false;
+						enableMDNS = false;
+						enableDomainController = true;
+						enableRegedit = true;
+					})
 
-		# CLI
-		lenovo-legion
-		s0ix-selftest-tool
+				# cromite
+				# ungoogled-chromium
 
-		pciutils
-		usbtop
-		usbutils
+				amdgpu_top
+				fusuma
+				pinned.vscodium-fhs
+				jetbrains-toolbox
+				trayscale
+				# waydroid-helper
 
-		# stdenv
-	];
+				# onlyoffice-desktopeditors
+				# libreoffice-qt6-fresh-unwrapped
+
+				uefisettings
+				uefitool
+
+				btrfs-assistant
+				btrfs-heatmap
+
+				lenovo-legion
+				s0ix-selftest-tool
+
+				pciutils
+				usbtop
+				usbutils
+			]);
 
 	# GUI Programs
 	programs = {
 		firefox.enable = true;
+		firefox.package = pinned.firefox;
 		# firefox.package = pkgs.firefox-devedition-unwrapped;
 
 		kde-pim.enable = false;
@@ -88,7 +114,7 @@
 
 	fonts.packages = with pkgs; [
 		nerd-fonts.code-new-roman
-		nerd-fonts.comic-shanns-mono
+		# nerd-fonts.comic-shanns-mono
 		nerd-fonts.commit-mono
 		# nerd-fonts.jetbrains-mono
 		nerd-fonts.symbols-only

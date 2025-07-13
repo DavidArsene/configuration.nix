@@ -12,6 +12,7 @@
 			allow-import-from-derivation = false;
 			auto-allocate-uids = true;
 			auto-optimise-store = true;
+			build-dir = "/tmp";
 			builders-use-substitutes = true;
 			experimental-features = ["auto-allocate-uids" "nix-command" "flakes"];# "local-overlay-store"];
 			flake-registry = "";
@@ -23,8 +24,10 @@
 			use-xdg-base-directories = true;
 			warn-dirty = false;
 			trusted-substituters = [
-				# Nix Community
+				# NUR
 				"https://nix-community.cachix.org"
+				"https://fym998-nur.cachix.org"
+				"https://shadowrz-nur.cachix.org"
 				# linux-cachyos
 				"https://chaotic-nyx.cachix.org"
 				# DetSys Nix
@@ -37,7 +40,9 @@
 			#lazy-trees = true;
 		}; # DetSys Nix  ^ and v
 		#package = specialArgs.nix.packages.${pkgs.system}.default;
-		package = pkgs.lix;
+		# package = pkgs.lix;
+		package = pkgs.nixVersions.latest;
+		# TODO: nix 2.30 with build-dir
 		registry.nixpkgs.flake = nixpkgs;
 	};
 	nixpkgs.config.allowUnfree = true;
@@ -60,5 +65,5 @@
 	# I wish
 	# system.forbiddenDependenciesRegexes = [ "-dev$" ];
 	system.systemBuilderArgs.localeArchive = lib.mkForce "";
-	# system.nixos.label = ;
+	system.nixos.label = config.system.nixos.release;
 }
