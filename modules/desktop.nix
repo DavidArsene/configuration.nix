@@ -1,122 +1,150 @@
 {
-	kwin-blur,
-	pkgs,
-	pinned,
-	...
-}: {
-	# Use NetworkManager on desktop for easy Wi-Fi
-	networking.networkmanager = {
-		enable = true;
-		# enableDefaultPlugins = false;
-		dns = "systemd-resolved";
-		plugins = [];
+  config,
+  edge,
+  # kwin-blur,
+  pkgs,
+  ...
+}:
+let
 
-		wifi.backend = "iwd";
-		wifi.powersave = true;
-	};
+  # QT apps need a consistent set of Qt libraries
+  qtPackages =
+    with pkgs;
+    with pkgs.kdePackages;
+    [
+      # Official KDE
+      falkon
+      filelight
+      kate
+      kcalc
+      kcharselect
+      kasts
+      kdeconnect-kde
+      kdevelop
+      # krita # after qt6 migration
+      plasma-sdk
+      yakuake
 
-	# disabledModules = [
-	# 	"services/desktop-managers/plasma6.nix"
-	# ];
+      # Everything else
+      btrfs-assistant
+      karousel
+      qalculate-qt
+      qbittorrent
+      qc
+      qMasterPassword-wayland
+      qownnotes
+      qdirstat
+      # supergfxctl-plasmoid
+      waycheck
 
-	# imports = [
-	# 	"${pinpkgs}/nixos/modules/services/desktop-managers/plasma6.nix"
-	# ];
+      # darkly
+      # pkgs.nur.repos.shadowrz.klassy-qt6
+      # kwin-blur.packages.${pkgs.system}.default
+    ];
 
-	services = {
-		# xserver.enable = true;
+  # Larger apps to be updated slower
+  otherPackages = with pkgs; [
+    # Use same Electron version
+    vesktop
+    zapzap
+    # mitmproxy
+    # httptoolkit
+    # p3x-onenote
+  
+    vscodium-fhs
+    # onlyoffice-desktopeditors
 
-		displayManager.sddm.enable = true;
-		# displayManager.autoLogin.enable = true;
-		# displayManager.autoLogin.user = config.users.flakeGlobal;
+    # (callPackage ../pkgs/libreoffice.nix { })
+    (callPackage ../pkgs/ida-pro.nix { })
+    # (callPackage ../pkgs/jetbrains.nix { }).idea-ultimate
 
-		desktopManager.plasma6.enable = true;
-		desktopManager.plasma6.enableQt5Integration = false;
+    vivaldi
 
-		# supergfxd.enable = true;
-	};
+    cmakeMinimal # for KDevelop
+  ];
 
-	# Recommended by Darkly
-	# KDE Settings will not work anymore; use `Qt6 Settings`
-	# qt.platformTheme = "qt5ct";
-	# qt.style = "kvantum";
+  edgePackages = with edge; [
+    # cromite
+    # ungoogled-chromium
+    mission-center
+    # trayscale
+    # waydroid-helper
 
-	# TODO: ?
-	# security.rtkit.enable = true;
+    cryptsetup
+    uefisettings
+    uefitool
+    tpm2-pkcs11
+    tpm2-tools
+    tpm2-totp
 
-	environment.systemPackages =
-		# KDE
-		(with pinned; with pinned.kdePackages; [
-				filelight
-				kate
-				kdeconnect-kde
-				yakuake
-				kdevelop
-				# plasma-sdk
+    btrfs-heatmap
 
-				qownnotes
-				qdirstat
-				supergfxctl-plasmoid
+    pciutils
+    usbtop
+    usbutils
 
-				# darkly
-				# pkgs.nur.repos.shadowrz.klassy-qt6
-				kwin-blur.packages.${pkgs.system}.default
-			])
-		++ (with pkgs; [
-				(keystore-explorer.override {
-						# TODO: global override
-						jdk = pkgs.zulu24;
-					})
-				(samba.override {
-						enableLDAP = true;
-						enableProfiling = false;
-						enableMDNS = false;
-						enableDomainController = true;
-						enableRegedit = true;
-					})
+    librespot
+    spotify-qt
 
-				# cromite
-				# ungoogled-chromium
+    # ---
+    # (keystore-explorer.override {
+    #   jdk = config.programs.java.package;
+    # })
+  ];
 
-				amdgpu_top
-				fusuma
-				pinned.vscodium-fhs
-				jetbrains-toolbox
-				trayscale
-				# waydroid-helper
+in
 
-				# onlyoffice-desktopeditors
-				# libreoffice-qt6-fresh-unwrapped
+{
+  # Use NetworkManager on desktop for easy Wi-Fi
+  networking.networkmanager = {
+    enable = true;
+    dns = "systemd-resolved";
+    plugins = [ ];
 
-				uefisettings
-				uefitool
+    wifi.backend = "iwd";
+    wifi.powersave = true;
+    # todo sh -c 'echo 2 > /proc/sys/net/ipv6/conf/wlan0/use_tempaddr' failed with exit code 1.
+  };
+  # Why are these two not linked?
+  # Tailscale fooled me by providing its own DNS resolver,
+  # leading to network being broken when not used.
+  services.resolved.enable = !config.services.tailscale.enable;
+  # TODO: meh
 
-				btrfs-assistant
-				btrfs-heatmap
+  services = {
+    displayManager.sddm.enable = true;
+    desktopManager.plasma6.enable = true;
 
-				lenovo-legion
-				s0ix-selftest-tool
+    udisks2.mountOnMedia = true;
+  };
 
-				pciutils
-				usbtop
-				usbutils
-			]);
+  # Recommended by Darkly
+  # KDE Settings will not work anymore; use `Qt6 Settings`
+  # qt.platformTheme = "qt5ct";
+  # qt.style = "kvantum";
 
-	# GUI Programs
-	programs = {
-		firefox.enable = true;
-		firefox.package = pinned.firefox;
-		# firefox.package = pkgs.firefox-devedition-unwrapped;
+  security.rtkit.enable = true;
 
-		kde-pim.enable = false;
-		partition-manager.enable = true;
-	};
+  environment.systemPackages = qtPackages ++ otherPackages ++ edgePackages;
 
-	fonts.packages = with pkgs; [
-		nerd-fonts.code-new-roman
-		# nerd-fonts.comic-shanns-mono
-		nerd-fonts.commit-mono
-		# nerd-fonts.jetbrains-mono
-		nerd-fonts.symbols-only
-	];
+  # GUI Programs
+  programs = {
+    firefox.enable = true;
+
+    kde-pim.enable = false;
+    partition-manager.enable = true;
+  };
+
+  # TODO: shortcut
+  # qdbus org.kde.KWin /KWin org.kde.KWin.showDebugConsole
+
+  # What's the difference between NFM and NF fonts?
+  # https://github.com/ryanoasis/nerd-fonts/discussions/945
+  fonts.packages = with pkgs.nerd-fonts; [
+    # code-new-roman
+    # comic-shanns-mono
+    # commit-mono
+    jetbrains-mono
+    symbols-only
+  ];
 }

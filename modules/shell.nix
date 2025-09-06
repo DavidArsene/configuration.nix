@@ -1,43 +1,57 @@
 {
-	config,
-	pkgs,
-	...
-}: {
-	programs.fish = {
-		enable = true;
-		useBabelfish = true;
-		# generateCompletions = true;
-	};
+  config,
+  edge,
+  ...
+}:
+{
+  users.defaultUserShell = edge.fish;
 
-	users.defaultUserShell = pkgs.fish;
+  programs.fish = {
+    enable = true;
+    useBabelfish = true;
+    # generateCompletions = true;
+    package = config.users.defaultUserShell;
 
-	# environment.shellAliases = {
-	# Aliases are displayed as-is
-	programs.fish.shellAliases = {
-		l = "eza -lah@MF --color-scale --icons --hyperlink --group-directories-first --time-style relative";
-		nrb = "nixos-rebuild --no-reexec -v --log-format bar-with-logs --sudo";
-		# nix repl with preloaded flake and system config
-		ndbg = "nix repl #nixosConfigurations.${config.networking.hostName} .";
-	};
-	# Abbreviations are expanded when typed
-	programs.fish.shellAbbrs = {
-		ltot = "l --total-size";
+    # Aliases are displayed as-is
+    shellAliases = {
+      l = "eza -lah@MF --color-scale --icons --hyperlink --group-directories-first --time-style relative";
+      # nix repl with preloaded flake and system config
+      ndbg = "nix repl #nixosConfigurations.${config.networking.hostName} .";
+      wget = "wget -q --show-progress";
+    };
 
-		nrba = "nrb dry-build";
-		nrbs = "nrb switch";
+    # Abbreviations are expanded when typed
+    shellAbbrs = {
+      ltot = "l --total-size";
+      ngc = "sudo nix-collect-garbage -d";
+    };
 
-		ngc = "sudo nix-collect-garbage -d";
-	};
+    interactiveShellInit = ''
+      		# Delete word with CTRL + Backspace
+      		bind \cH backward-kill-path-component
 
-	programs.fish.interactiveShellInit = ''
-		# Delete word with CTRL + Backspace
-		bind \cH backward-kill-path-component
+      		function fish_greeting
+      			fastfetch
+      		end
 
-		function fish_greeting
-			fastfetch
-		end
+      		atuin  init fish | source
+      		zoxide init fish | source
+      	'';
+  };
 
-		atuin  init fish | source
-		zoxide init fish | source
-	'';
+  programs.starship = {
+    enable = true;
+    package = edge.starship;
+    # settings = { }; # TODO: declarative
+    transientPrompt.enable = false;
+  };
+
+  environment.systemPackages = with edge; [
+    atuin
+    fastfetchMinimal
+    nushell
+    zoxide
+
+    (fortune.override { withOffensive = true; })
+  ];
 }

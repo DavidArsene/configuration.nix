@@ -1,119 +1,94 @@
 {
-	config,
-	pkgs,
-	...
-}: {
-	# TODO: use chaotic v4
-	environment.systemPackages = with pkgs; [
-		# Nix
-		alejandra
-		nix-tree
-		nixd
-		nh
-		# nix-du
-		# nix-fast-build
-		# nix-inspect
-		# nix-weather
-		nvd
-		# specialArgs.nox.packages.x86_64-linux.default
+  edge,
+  config,
+  pkgs,
+  ...
+}:
+{
+  # TODO: find x86_64-v4 precompileds
+  environment.systemPackages =
+    (with edge; [
+      # Nix
+      nix-tree
+      nixd
+      nixfmt
+      nix-forecast
+      # nix-du
+      # nix-fast-build
+      # nix-inspect
+      # nix-locate
+      nvd
 
-		# Modern utilities
-		atuin
-		bat
-		broot
-		btop
-		curlie
-		delta
-		eza
-		fastfetch
-		fd
-		micro
-		ncdu
-		nushell
-		ripgrep
-		superfile
-		zoxide
+      # Modern utilities
+      bat # cat
+      btop # htop
+      curlie # curl
+      delta # diff
+      eza # ls
+      fd # everybody hates gnu find
+      glances
+      ripgrep # grep
+      xh # wget
 
-		# Everything else
-		fatrace
-		file
-		gh
-		iotop-c
-		powertop
-		rustup
-		smartmontools
-		strace
-		strace-analyzer
-		sysdig
-		tinyxxd
+      # Everything else
+      binutils
+      fatrace
+      file
+      gh
+      imagemagick
+      lshw
+      lsof
+      modprobed-db
+      p7zip-rar
+      psmisc
+      qrencode
+      smartmontools
+      strace
+      strace-analyzer
+      sysdig
+      tinyxxd
+      which
+      wget # sigh why not in path
 
-		efivar
-		efitools
-		efibootmgr
-		sbctl
-		sbsigntool
-	];
+      efivar
+      efitools
+      efibootmgr
+      sbctl
+      sbsigntool
 
-	environment.etc."ncdu.conf".text = ''
-		--extended
-		--exclude-kernfs
-		--threads 4
-		--show-itemcount
-		--show-mtime
-		--graph-style eighth-block
-		--shared-column unique
-		--color dark
-	'';
+      rustup
+    ])
+    ++ (with pkgs; [
+      python3 # TODO: move to dev.nix
+      (callPackage ../pkgs/powertop.nix { })
+    ]);
 
-	# programs.gnupg.agent = {
-	#   enable = true;
-	#   enableSSHSupport = true;
-	# };
+  programs.java = {
+    enable = false; # TODO: difference between manually setting JAVA_HOME?
+    # package = pkgs.callPackage ../pkgs/zing.nix { };
+    binfmt = true;
+  };
+  # environment.variables.JAVA_HOME = "${config.programs.java.package}";
 
-	programs.java = {
-		enable = true;
-		package = pkgs.zulu24;
-		# binfmt = true;
-	};
+  programs.git = {
+    enable = true;
+    config = {
+      # TODO: cannot be read from VSCode FSHenv
+      user.name = "DavidArsene";
+      user.email = "80218600+DavidArsene@users.noreply.github.com";
 
-	programs.git = {
-		enable = true;
-		config = {
-			# TODO: cannot be read from VSCode FSHenv
-			user.name = "DavidArsene";
-			user.email = "80218600+DavidArsene@users.noreply.github.com";
+      core.pager = "delta";
+      interactive.diffFilter = "delta --color-only";
+      delta.line-numbers = true;
+      delta.navigate = true;
+      merge.conflictstyle = "zdiff3";
+    };
+  };
 
-			core.pager = "delta";
-			interactive.diffFilter = "delta --color-only";
-			delta.line-numbers = true;
-			delta.navigate = true;
-			merge.conflictstyle = "zdiff3";
-		};
-	};
+  programs.nh = {
+    enable = true;
+    flake = config.environment.etc."nixos".source;
+  };
 
-	programs.yazi = {
-		enable = true;
-		settings.yazi = {
-			mgr = {
-				sort_by = "natural";
-				sort_dir_first = true;
-				linemode = "size";
-				show_hidden = true;
-			};
-		};
-	};
-
-	services.code-server = {
-		enable = false; # true
-		user = config.users.flakeGlobal;
-		group = "users";
-		host = "0.0.0.0"; # Allow access from outside
-		# port = 4444;
-		auth = "none";
-		disableTelemetry = true;
-		disableUpdateCheck = true;
-		disableWorkspaceTrust = true;
-	};
-
-	services.tailscale.enable = true;
+  services.tailscale.enable = true;
 }

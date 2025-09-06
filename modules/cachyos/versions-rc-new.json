@@ -1,0 +1,21 @@
+{
+	"_suffix": "Matches `Add-extra-version-CachyOS.patch`",
+	"_linux": "pkgver from config's PKGBUILD",
+	"_config": "latest commit from https://github.com/CachyOS/linux-cachyos/commits/master/linux-cachyos",
+	"_patches": "latest commit from https://github.com/CachyOS/kernel-patches/commits/master/x.y",
+
+	"_HELP": "Paste new versions after this line",
+	"suffix": "-cachyos",
+	"linux": {
+		"version": "6.17-rc1",
+		"hash": "sha256-m/XXk+UOVljcjlJKl7+1/FLmFx6mihoapfR8gG6Fqfk="
+	},
+	"config": {
+		"rev": "51880dac026d6160c68e05a7795fef668e68ea2b",
+		"hash": "sha256-cerHG/fwdT1zai6TcyUF9Mgo3QRrUzXxNe85geTmJPo="
+	},
+	"patches": {
+		"rev": "124e50fd89d80e2fb25d2e9c517ff61ac7d4f9b2",
+		"hash": "sha256-K0LPBk0BwwrMspTXXF7eOnIa+p1QRfBeBx/x65/I7Pw="
+	}
+}

@@ -1,3 +1,5 @@
+# Do not overwrite this file, it is manually modified.
+
 842_compress
 842_decompress
 ac
@@ -32,6 +34,7 @@ cec
 cfg80211
 cmac
 configfs
+cpufreq_stats
 cqhci
 crc16
 crc32c_generic
@@ -74,7 +77,6 @@ inet_diag
 input_leds
 intel_rapl_common
 intel_rapl_msr
-ip_tables
 irqbypass
 jbd2
 joydev
@@ -109,12 +111,15 @@ nf_defrag_ipv4
 nf_defrag_ipv6
 nf_nat
 nfnetlink
-nf_tables
 nft_chain_nat
 nft_compat
 nls_cp437
 nls_iso8859_1
 nvidia_wmi_ec_backlight
+nvme
+nvme_auth
+nvme_core
+nvme_keyring
 onboard_usb_dev
 platform_profile
 polyval_clmulni
@@ -247,3 +252,68 @@ trusted
 ata_piix
 sd_mod
 sr_mod
+
+# iptables
+nf_tables
+ip_tables
+iptable_filter
+ip6table_filter
+x_tables
+xt_tcpudp
+
+
+## New after zen
+af_key
+crc32c_cryptoapi
+
+iptable_filter
+iptable_mangle
+iptable_nat
+iptable_raw
+ipt_REJECT
+nfnetlink_log
+nf_reject_ipv4
+
+overlay
+sch_ingress
+scsi_common
+scsi_mod
+sd_mod
+tls
+tunnel4
+tunnel6
+veth
+
+vmw_vmci
+vmw_vsock_virtio_transport_common
+vmw_vsock_vmci_transport
+
+vsock
+vsock_loopback
+
+xfrm6_tunnel
+xfrm_algo
+xfrm_interface
+xfrm_user
+
+xt_bpf
+xt_CHECKSUM
+xt_connmark
+xt_conntrack
+xt_NFLOG
+xt_policy
+xt_state
+xt_TCPMSS
+xt_u32
+# End
+
+# USB Ethernet
+cdc_ether
+cdc_mbim
+cdc_ncm
+cdc_wdm
+libphy
+mdio_bus
+mii
+r8152
+usbnet
