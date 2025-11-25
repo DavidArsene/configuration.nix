@@ -1,101 +1,129 @@
 {
   config,
-  edge,
-  # kwin-blur,
+  custom,
+  mylib,
+  edge ? pkgs,
   pkgs,
+  zen,
   ...
 }:
 let
 
-  # QT apps need a consistent set of Qt libraries
+  #> QT apps need a consistent set of Qt libraries
   qtPackages =
     with pkgs;
     with pkgs.kdePackages;
     [
-      # Official KDE
-      falkon
+      #> Official KDE
       filelight
       kate
-      kcalc
-      kcharselect
-      kasts
       kdeconnect-kde
-      kdevelop
+      # kdevelop
       # krita # after qt6 migration
       plasma-sdk
       yakuake
 
-      # Everything else
+      # TODO: .desktop file for qdbusviewer
+
+      #> Random KDE
+      # falkon
+      # kasts
+      kcalc
+      kcharselect
+      # kdenlive
+      krusader
+      konqueror
+
+      #> Obscure KDE
+      # calligra
+      ksystemlog
+      # kgpg
+      # kleopatra
+      kdebugsettings
+      #      kmahjongg
+      #      marble
+      #      okteta
+      #      elf-dissector
+
+      #> Everything else
       btrfs-assistant
       karousel
       qalculate-qt
       qbittorrent
       qc
       qMasterPassword-wayland
-      qownnotes
-      qdirstat
+      # qownnotes
+      (mylib.mkFreshOnly qdirstat)
+      # spotify-qt
       # supergfxctl-plasmoid
+      uefitool
       waycheck
-
-      # darkly
-      # pkgs.nur.repos.shadowrz.klassy-qt6
-      # kwin-blur.packages.${pkgs.system}.default
     ];
 
-  # Larger apps to be updated slower
+  #> Larger apps to be updated slower
   otherPackages = with pkgs; [
-    # Use same Electron version
-    vesktop
-    zapzap
-    # mitmproxy
+    #> Use same Electron version
+    (mylib.mkFreshOnly vesktop)
+    (mylib.mkFreshOnly zapzap)
+    # equicord # Vencord fork
+    # ayugram-desktop
+
+    mitmproxy
     # httptoolkit
     # p3x-onenote
-  
-    vscodium-fhs
-    # onlyoffice-desktopeditors
 
-    # (callPackage ../pkgs/libreoffice.nix { })
-    (callPackage ../pkgs/ida-pro.nix { })
-    # (callPackage ../pkgs/jetbrains.nix { }).idea-ultimate
-
-    vivaldi
-
-    cmakeMinimal # for KDevelop
-  ];
-
-  edgePackages = with edge; [
-    # cromite
-    # ungoogled-chromium
-    mission-center
-    # trayscale
-    # waydroid-helper
-
+    #> And less frequently used
     cryptsetup
-    uefisettings
-    uefitool
     tpm2-pkcs11
     tpm2-tools
     tpm2-totp
+    # onlyoffice-desktopeditors
+
+    # (callPackage ../pkgs/libreoffice.nix { })
+  ];
+
+  edgePackages = with edge; [
+    # TODO: remove policies when issue
+    #! (zen.packages.${custom.system}.twilight.override { extraPolicies = firefoxPolicies; })
+    # cromite
+
+    # mission-center
+    # trayscale
+    # waydroid-helper
+
+    uefisettings
 
     btrfs-heatmap
+    compsize
 
     pciutils
     usbtop
     usbutils
 
-    librespot
-    spotify-qt
-
-    # ---
-    # (keystore-explorer.override {
-    #   jdk = config.programs.java.package;
-    # })
+    # librespot
   ];
+
+  firefoxPolicies = {
+    CaptivePortal = false;
+    Cookies.Behavior = "reject-foreign";
+    DisableAppUpdate = true;
+    DisableFirefoxStudies = false; # see about:studies
+    DisableProfileRefresh = true;
+    DisableSetDesktopBackground = true;
+    DisableTelemetry = false;
+    # DNSOverHTTPS
+    DontCheckDefaultBrowser = true;
+    EnableTrackingProtection.Value = false; # uBlock?
+    # ExtensionUpdate
+    # FirefoxHome
+    # GoToIntranetSiteForSingleWordEntryInAddressBar
+    # LegacyProfiles
+  };
 
 in
 
 {
-  # Use NetworkManager on desktop for easy Wi-Fi
+  #> Use NetworkManager on desktop for easy Wi-Fi
   networking.networkmanager = {
     enable = true;
     dns = "systemd-resolved";
@@ -105,9 +133,9 @@ in
     wifi.powersave = true;
     # todo sh -c 'echo 2 > /proc/sys/net/ipv6/conf/wlan0/use_tempaddr' failed with exit code 1.
   };
-  # Why are these two not linked?
-  # Tailscale fooled me by providing its own DNS resolver,
-  # leading to network being broken when not used.
+  #> Why are these two not linked?
+  #> Tailscale fooled me by providing its own DNS resolver,
+  #> leading to network being broken when not used.
   services.resolved.enable = !config.services.tailscale.enable;
   # TODO: meh
 
@@ -118,33 +146,30 @@ in
     udisks2.mountOnMedia = true;
   };
 
-  # Recommended by Darkly
-  # KDE Settings will not work anymore; use `Qt6 Settings`
-  # qt.platformTheme = "qt5ct";
-  # qt.style = "kvantum";
+  environment.sessionVariables = {
+    KWIN_USE_OVERLAYS = 1;
+  };
 
   security.rtkit.enable = true;
 
   environment.systemPackages = qtPackages ++ otherPackages ++ edgePackages;
 
-  # GUI Programs
+  #> GUI Programs
   programs = {
-    firefox.enable = true;
-
-    kde-pim.enable = false;
     partition-manager.enable = true;
   };
 
-  # TODO: shortcut
-  # qdbus org.kde.KWin /KWin org.kde.KWin.showDebugConsole
-
-  # What's the difference between NFM and NF fonts?
-  # https://github.com/ryanoasis/nerd-fonts/discussions/945
-  fonts.packages = with pkgs.nerd-fonts; [
-    # code-new-roman
-    # comic-shanns-mono
-    # commit-mono
-    jetbrains-mono
-    symbols-only
-  ];
+  #> What's the difference between NFM and NF fonts?
+  #> https://github.com/ryanoasis/nerd-fonts/discussions/945
+  fonts.packages =
+    with pkgs;
+    with pkgs.nerd-fonts;
+    [
+      # twemoji-color-font
+      # code-new-roman
+      # comic-shanns-mono
+      # commit-mono
+      # jetbrains-mono
+      symbols-only
+    ];
 }

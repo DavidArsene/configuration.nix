@@ -1,4 +1,4 @@
-{ edge, ... }:
+{ pkgs, ... }:
 {
 
   environment.etc."ncdu.conf".text = ''
@@ -12,7 +12,7 @@
     --color dark
   '';
 
-  environment.systemPackages = with edge; [
+  environment.systemPackages = with pkgs; [
     broot
     micro # nano
     ncdu

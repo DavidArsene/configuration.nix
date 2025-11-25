@@ -83,7 +83,10 @@ joydev
 kvm
 kvm_amd
 led_class
+
+legion_laptop
 lenovo_wmi_hotkey_utilities
+
 libaescfb
 libarc4
 libdes
@@ -216,6 +219,7 @@ typec
 typec_ucsi
 ucsi_acpi
 udp_diag
+uinput
 usbhid
 uvc
 uvcvideo
@@ -317,3 +321,8 @@ mdio_bus
 mii
 r8152
 usbnet
+
+# From running without GPU drivers
+drm_gpuvm
+mxm_wmi
+nouveau

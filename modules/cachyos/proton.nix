@@ -1,8 +1,9 @@
-{ lib
-, stdenv
-, fetchurl
-, zstd
-, protonCachyosVersions
+{
+  lib,
+  stdenv,
+  fetchurl,
+  zstd,
+  protonCachyosVersions,
 }:
 
 stdenv.mkDerivation {
@@ -22,11 +23,11 @@ stdenv.mkDerivation {
     mv usr/share/steam/compatibilitytools.d/proton-cachyos $out/share/steam/compatibilitytools.d/
   '';
 
-  meta = with lib; {
+  meta = {
     description = "CachyOS Proton build with additional patches and optimizations";
     homepage = "https://github.com/CachyOS/proton-cachyos";
-    license = licenses.bsd3;
+    license = lib.licenses.bsd3;
     platforms = [ "x86_64-linux" ];
-    maintainers = with maintainers; [ kimjongbing ];
+    maintainers = with lib.maintainers; [ kimjongbing ];
   };
 }

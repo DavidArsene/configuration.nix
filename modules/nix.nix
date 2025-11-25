@@ -1,54 +1,33 @@
 {
   config,
-  nix,
-  nixpkgs,
-  pkgs,
+  custom,
+  # nix-detsys,
+  self,
   ...
 }:
-let
-  getdef = input: input.packages.${pkgs.stdenv.hostPlatform.system}.default;
-in
 {
   nix = {
     settings = {
       accept-flake-config = false;
-      allow-import-from-derivation = false;
-      auto-allocate-uids = true;
+      # Needed by idea-ultimate
+      allow-import-from-derivation = true;
       auto-optimise-store = true;
       build-dir = "/tmp";
       builders-use-substitutes = true;
-      # ca-derivations = true;
-      experimental-features = [
-        "auto-allocate-uids"
-        "ca-derivations"
-        "nix-command"
-        "flakes"
-        "local-overlay-store"
-        "pipe-operators"
-      ];
-      flake-registry = "";
+      # flake-registry = "";
       fallback = false;
-      # Includes files from fetch{url,zip}
-      keep-derivations = false;
+      keep-derivations = false; # Includes files from fetch{url,zip}
       # max-jobs = 0; # delegate all builds to server
-      # pipe-operators = true;
+      sandbox = "relaxed";
       # show-trace = true;
-      use-xdg-base-directories = true;
-      warn-dirty = false;
       trusted-substituters = [
-        # NUR
-        "https://nix-community.cachix.org"
-        "https://shadowrz-nur.cachix.org"
-
         "https://install.determinate.systems"
-        "https://nix-gaming.cachix.org"
+        "https://nix-community.cachix.org"
       ];
       trusted-users = [ "@wheel" ];
-
-      lazy-trees = true;
+      warn-dirty = false;
     };
 
-    channel.enable = false;
     buildMachines = [
       {
         hostName = "creeper";
@@ -60,7 +39,7 @@ in
         ];
         maxJobs = 1;
         speedFactor = 2;
-        sshUser = config.custom.user;
+        sshUser = custom.myself;
         supportedFeatures = [
           "benchmark"
           "big-parallel"
@@ -69,13 +48,15 @@ in
     ];
     distributedBuilds = true;
 
-    # package = edge.lix;
-    package = (getdef nix).overrideAttrs (old: {
-      doCheck = false; # TODO: what causes it to build?
-      doInstallCheck = false;
-    });
-
-    registry.nixpkgs.flake = nixpkgs;
+    # package = pkgs.lix;
+    # package = (getdef nix-detsys).overrideAttrs (old: {
+    #   doCheck = false; # TODO: what causes it to build?
+    #   doInstallCheck = false;
+    #   withAWS = false;
+    # });
+    # package = nix-detsys.packages.${pkgs.system}.default.override {
+    #   withAWS = false;
+    # };
   };
 
   programs = {
@@ -85,26 +66,27 @@ in
     nix-index-database.comma.enable = true;
   };
 
-  nixpkgs.config = {
-    allowUnfree = true;
-    # checkMeta = true;
+  # nixpkgs.config = {
+  # Would replace the boring "-source" suffix
+  # with the repo name and version.
+  # Unfortunately causes mass rebuild (not even cached).
+  # NOTE: CppNix hardcodes "source" for various checks.
+  # fetchedSourceNameDefault = "versioned";
 
-    # Would replace the boring "-source" suffix
-    # with the repo name and version.
-    # Unfortunately causes mass rebuild (not even cached).
-    # fetchedSourceNameDefault = "versioned";
+  # Same with these:
+  # doCheckByDefault = false;
+  # enableParallelBuildingByDefault = true;
+  # contentAddressedByDefault = true;
+  # };
 
-    # Same with these:
-    # doCheckByDefault = false;
-    # enableParallelBuildingByDefault = true;
-    # contentAddressedByDefault = true;
-  };
+  environment.etc = {
+    # Make /etc/nixos point to the local copy of the config,
+    # such that all nix commands find it without --flake.
+    "nixos".source = "/home/${custom.myself}/.nix/configuration.nix/";
 
-  environment.etc."nixos" = {
-    # TODO: change
-    source = "/home/${config.custom.user}/nixconfig/";
-    target = "nixos";
-    mode = "symlink";
+    # Similarly, a link to the version of
+    # the config used to build this system.
+    "source".source = self;
   };
 
   system.nixos.label = config.system.nixos.release;
@@ -117,6 +99,13 @@ in
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
   # TODO: Requires systemd in initrd, ruins my initrd-less boot plans
-  # system.etc.overlay.enable = true;
-  # system.etc.overlay.mutable = false;
+  #  system.etc.overlay.enable = true;
+  #  system.etc.overlay.mutable = false;
+  #  system.nixos-init.enable = true;
+  #  boot.initrd.systemd.enable = true;
+  #  boot.initrd.systemd.emergencyAccess = config.users.users.${custom.myself}.hashedPassword;
+  # boot.initrd.clevis.enable = true;
+  boot.initrd.checkJournalingFS = true;
+  #  services.userborn.enable = true;
+  # systemd.sysusers.enable = true;
 }

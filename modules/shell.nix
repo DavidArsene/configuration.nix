@@ -1,6 +1,7 @@
 {
   config,
-  edge,
+  edge ? pkgs,
+  pkgs,
   ...
 }:
 {
@@ -15,28 +16,22 @@
     # Aliases are displayed as-is
     shellAliases = {
       l = "eza -lah@MF --color-scale --icons --hyperlink --group-directories-first --time-style relative";
-      # nix repl with preloaded flake and system config
-      ndbg = "nix repl #nixosConfigurations.${config.networking.hostName} .";
       wget = "wget -q --show-progress";
+
+      rw-store = "sudo nsenter --mount --target (pgrep --oldest nix-daemon)";
     };
 
     # Abbreviations are expanded when typed
     shellAbbrs = {
       ltot = "l --total-size";
       ngc = "sudo nix-collect-garbage -d";
+
+      # nix repl with preloaded flake and system config
+      oldcfg = "nix repl /etc/source#nixosConfigurations.(hostname)";
+      newcfg = "nix repl /etc/nixos/#nixosConfigurations.(hostname)";
     };
 
-    interactiveShellInit = ''
-      		# Delete word with CTRL + Backspace
-      		bind \cH backward-kill-path-component
-
-      		function fish_greeting
-      			fastfetch
-      		end
-
-      		atuin  init fish | source
-      		zoxide init fish | source
-      	'';
+    interactiveShellInit = ./config.fish;
   };
 
   programs.starship = {
@@ -46,12 +41,12 @@
     transientPrompt.enable = false;
   };
 
-  environment.systemPackages = with edge; [
+  environment.systemPackages = with pkgs; [
     atuin
     fastfetchMinimal
-    nushell
+    # nushell
     zoxide
 
-    (fortune.override { withOffensive = true; })
+    # (fortune.override { withOffensive = true; })
   ];
 }

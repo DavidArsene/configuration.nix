@@ -1,11 +1,10 @@
 {
-  config,
-  edge,
+  custom,
   lib,
+  pkgs,
   ...
 }:
 {
-  ### TODO: Add env NIXOS_CONFIG
   boot.kernelParams = [
     # TODO: slower on Zen 4?
     # "mitigations=off"
@@ -17,19 +16,20 @@
 
     # "earlyprintk=vga"
   ];
-  boot.kernelPackages = lib.mkDefault edge.linuxPackages_zen;
+  boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_zen;
 
-  # Remove S from `less` to enable word-wrap
-  # LogLevel=debug
-  # LogColor=yes
-  # LogLocation=yes
-  # LogTarget=yes
-  # LogTime=yes
-  # ShowStatus=yes
-  systemd.extraConfig = ''
-    Less=FRXMK
-    StatusUnitFormat=combined
-  '';
+  # LogLevel = "debug"
+  # LogColor = "yes"
+  # LogLocation = "yes"
+  # LogTarget = "yes"
+  # LogTime = "yes"
+  # ShowStatus = "yes"
+  systemd.settings.Manager = {
+    #> Remove S from `less` to enable word-wrap
+    Less = "FRXMK";
+    #> Show unit names not just descriptions
+    StatusUnitFormat = "combined";
+  };
 
   time.timeZone = "Europe/Bucharest";
 
@@ -53,7 +53,7 @@
     "ro_RO/ISO-8859-2"
   ];
 
-  users.users.${config.custom.user} = {
+  users.users.${custom.myself} = {
     isNormalUser = true;
     description = "David";
     extraGroups = [ "wheel" ];
@@ -77,15 +77,18 @@
   # '';
   # security.pam.services
 
-  # FIXME: Danger
-  security.polkit.debug = true;
+  # security.polkit.debug = true;
   security.polkit.extraConfig = lib.mkForce ''
     polkit.addRule(function(action, subject) {
-      if (subject.isInGroup("admin") || subject.isInGroup("wheel")) {
-        polkit.log("Subject " + subject + " performed action " + action);
+      // polkit.log(action);
+      // polkit.log(subject);
+
+      if (subject.local && subject.active && subject.isInGroup("wheel")) {
         return polkit.Result.YES;
+      } else {
+        // polkit.log("kinda sus");
       }
-    }
+    });
   '';
 
   # TODO move

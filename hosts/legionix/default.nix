@@ -1,15 +1,9 @@
 { pkgs, ... }:
 {
-  imports = [
-    ./hardware.nix
-    ../modules/desktop.nix
-    ../modules/development.nix
-    ../modules/gaming.nix
-    # ../modules/lab/initrdless
-  ];
+  imports = [ ./hardware.nix ];
 
   virtualisation.virtualbox.guest.enable = false;
-  virtualisation.waydroid.enable = true;
+  # virtualisation.waydroid.enable = true;
 
   boot.loader.systemd-boot = {
     enable = true;
