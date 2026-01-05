@@ -7,7 +7,7 @@
 {
   boot.kernelParams = [
     # TODO: slower on Zen 4?
-    # "mitigations=off"
+    "mitigations=off"
     "nowatchdog"
     # Disable SSD power-saving for lower latency
     # "nvme_core.default_ps_max_latency_us=0"
@@ -16,7 +16,7 @@
 
     # "earlyprintk=vga"
   ];
-  boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_zen;
+  boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
 
   # LogLevel = "debug"
   # LogColor = "yes"
@@ -26,10 +26,23 @@
   # ShowStatus = "yes"
   systemd.settings.Manager = {
     #> Remove S from `less` to enable word-wrap
-    Less = "FRXMK";
+    #! FIXME: conflicts with systemd.nix because string without priority
+    # ManagerEnvironment = "LESS=FRXMK";
     #> Show unit names not just descriptions
     StatusUnitFormat = "combined";
+
+    # TODO: minimal mentioned?
+    DefaultMemoryAccounting = false;
+    DefaultTasksAccounting = false;
+    DefaultIOAccounting = false;
+    DefaultIPAccounting = false;
+
+    # ???
+    # DefaultRestartMode = "debug";
+    # RuntimeWatchdogSec = 0; ?
+    # CtrlAltDelBurstAction = "poweroff-force";
   };
+  systemd.ctrlAltDelUnit = "shutdown.target";
 
   time.timeZone = "Europe/Bucharest";
 
@@ -56,7 +69,11 @@
   users.users.${custom.myself} = {
     isNormalUser = true;
     description = "David";
-    extraGroups = [ "wheel" ];
+    # `input` required by CBF
+    extraGroups = [
+      "wheel"
+      "input"
+    ];
     hashedPassword = "$y$j9T$qziosG8H1ZEuu7FMixgtk0$4aTF5xoTyg1MzcH2yUcb1/L21w3IigoYdId.vEdLnA9";
   };
   users.mutableUsers = false;
@@ -68,7 +85,7 @@
     memoryPercent = 100;
   };
 
-  # security.doas.enable = true;
+  security.doas.enable = true;
   # security.sudo.enable = false;
   security.sudo.wheelNeedsPassword = false;
 
@@ -77,17 +94,20 @@
   # '';
   # security.pam.services
 
-  # security.polkit.debug = true;
-  security.polkit.extraConfig = lib.mkForce ''
-    polkit.addRule(function(action, subject) {
-      // polkit.log(action);
-      // polkit.log(subject);
+  security.polkit.debug = true;
+  security.polkit.extraConfig = ''
 
-      if (subject.local && subject.active && subject.isInGroup("wheel")) {
+    polkit.addRule(function(action, subject) {
+      polkit.log( action.toString());
+      polkit.log(subject.toString());
+
+      if (subject.local && subject.active && subject.isInGroup("wheel"))
+      {
+        polkit.log("trivial: Authorized!");
         return polkit.Result.YES;
-      } else {
-        // polkit.log("kinda sus");
       }
+
+      polkit.log("trivial: Not Handled.");
     });
   '';
 

@@ -1,7 +1,8 @@
 {
   config,
   custom,
-  # nix-detsys,
+  # detsys,
+  pkgs,
   self,
   ...
 }:
@@ -9,10 +10,8 @@
   nix = {
     settings = {
       accept-flake-config = false;
-      # Needed by idea-ultimate
-      allow-import-from-derivation = true;
       auto-optimise-store = true;
-      build-dir = "/tmp";
+      build-dir = "/tmp/nixbld";
       builders-use-substitutes = true;
       # flake-registry = "";
       fallback = false;
@@ -26,11 +25,33 @@
       ];
       trusted-users = [ "@wheel" ];
       warn-dirty = false;
+    }
+
+    # Modernize Nix
+    // {
+      auto-allocate-uids = true;
+      # ca-derivations = true;
+      experimental-features = [
+        "auto-allocate-uids"
+        "ca-derivations"
+        "nix-command"
+        "flakes"
+        "local-overlay-store"
+        "pipe-operators"
+      ];
+      use-xdg-base-directories = true;
+      # lazy-trees = true;
     };
+
+    channel.enable = false;
+
+    # package = pkgs.lix;
+    package = pkgs.nixVersions.latest;
+    # Modernizing ends here.
 
     buildMachines = [
       {
-        hostName = "creeper";
+        hostName = "phoenix";
         system = "aarch64-linux";
         protocol = "ssh-ng";
         systems = [
@@ -48,8 +69,7 @@
     ];
     distributedBuilds = true;
 
-    # package = pkgs.lix;
-    # package = (getdef nix-detsys).overrideAttrs (old: {
+    # package = (getdef detsys).overrideAttrs (old: {
     #   doCheck = false; # TODO: what causes it to build?
     #   doInstallCheck = false;
     #   withAWS = false;
@@ -66,32 +86,19 @@
     nix-index-database.comma.enable = true;
   };
 
-  # nixpkgs.config = {
-  # Would replace the boring "-source" suffix
-  # with the repo name and version.
-  # Unfortunately causes mass rebuild (not even cached).
-  # NOTE: CppNix hardcodes "source" for various checks.
-  # fetchedSourceNameDefault = "versioned";
-
-  # Same with these:
-  # doCheckByDefault = false;
-  # enableParallelBuildingByDefault = true;
-  # contentAddressedByDefault = true;
-  # };
-
   environment.etc = {
-    # Make /etc/nixos point to the local copy of the config,
-    # such that all nix commands find it without --flake.
+    #? Make /etc/nixos point to the local copy of the config,
+    #? such that all nix commands find it without --flake.
     "nixos".source = "/home/${custom.myself}/.nix/configuration.nix/";
 
-    # Similarly, a link to the version of
-    # the config used to build this system.
+    #? Similarly, a link to the version of
+    #? the config used to build this system.
     "source".source = self;
   };
 
   system.nixos.label = config.system.nixos.release;
   system.nixos.extraLSBReleaseArgs = {
-    LSB_VERSION = "25.11 (Unstable)"; # TODO: fix
+    LSB_VERSION = "Unstable"; # TODO: fix
     DISTRIB_DESCRIPTION = "NixOS Enterprise ${config.system.nixos.release}";
   };
 
@@ -99,13 +106,26 @@
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
   # TODO: Requires systemd in initrd, ruins my initrd-less boot plans
-  #  system.etc.overlay.enable = true;
-  #  system.etc.overlay.mutable = false;
-  #  system.nixos-init.enable = true;
-  #  boot.initrd.systemd.enable = true;
-  #  boot.initrd.systemd.emergencyAccess = config.users.users.${custom.myself}.hashedPassword;
+  # system.etc.overlay.enable = true;
+  # system.etc.overlay.mutable = false;
+  # system.nixos-init.enable = true;
+  # boot.initrd.systemd.enable = true;
+  # boot.initrd.systemd.emergencyAccess = config.users.users.${custom.myself}.hashedPassword;
   # boot.initrd.clevis.enable = true;
   boot.initrd.checkJournalingFS = true;
-  #  services.userborn.enable = true;
+  # services.userborn.enable = true;
   # systemd.sysusers.enable = true;
+
+  comment.nixpkgs.config = {
+    #? Would replace the boring "-source" suffix
+    #? with the repo name and version.
+    #? Unfortunately causes mass rebuild (nothing cached).
+    #* NOTE: CppNix hardcodes "source" in a few places.
+    # fetchedSourceNameDefault = "versioned";
+
+    #? Same with these:
+    # doCheckByDefault = false;
+    # enableParallelBuildingByDefault = true;
+    # contentAddressedByDefault = true;
+  };
 }

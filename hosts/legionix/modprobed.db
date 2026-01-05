@@ -326,3 +326,37 @@ usbnet
 drm_gpuvm
 mxm_wmi
 nouveau
+
+# From 6.17 / MTK BROM
+cdc_acm
+firmware_attributes_class
+lenovo_wmi_capdata01
+lenovo_wmi_events
+lenovo_wmi_gamezone
+lenovo_wmi_helpers
+lenovo_wmi_other
+snd_hda_codec_alc269
+snd_hda_codec_atihdmi
+snd_hda_codec_nvhdmi
+snd_hda_codec_realtek_lib
+unix_diag
+
+# netbird
+chacha_x86_64
+curve25519_x86_64
+ip6_udp_tunnel
+libchacha
+libchacha20poly1305
+libcurve25519_generic
+libpoly1305
+nft_ct
+nft_fib
+nft_fib_ipv4
+nft_masq
+poly1305_x86_64
+udp_tunnel
+wireguard
+
+# 6.18
+hkdf
+sha1

@@ -5,10 +5,17 @@ let
 in
 rec {
 
-  # Used to install all packages, including ones
-  # that are normally skipped on upgrades due
-  # to being frequently rebuilt without changes.
+  #? Used to install all packages, including ones
+  #? that are normally skipped on upgrades due
+  #? to being frequently rebuilt without changes.
   mkFreshOnly = pkg: lib.mkIf (isEnvTrue "FRESH_INSTALL") pkg;
+
+  optimizedBuild =
+    pkgs: pkg:
+    pkg.overrideAttrs rec {
+      stdenv = pkgs.stdenvAdapters.impureUseNativeOptimizations pkgs.fastStdenv;
+      buildPackages.stdenv = stdenv;
+    };
 
   allAvailableModules =
     with lib;
@@ -21,9 +28,9 @@ rec {
     })
     |> listToAttrs;
 
-  # Wrapper for everything (?) needed for a multi-host NixOS flake.
-  # Call this first with common customizations for all hosts,
-  # then call the resulting function with host-specific data.
+  #? Wrapper for everything (?) needed for a multi-host NixOS flake.
+  #? Call this first with common customizations for all hosts,
+  #? then call the resulting function with host-specific data.
   mkSystem =
     {
       specialArgs,
@@ -42,7 +49,7 @@ rec {
       hostModules ? [ ],
     }:
 
-    # ! Use custom nixosSystem which makes up a big part of minimal.nix
+    #! Use the the custom nixosSystem from minimal.nix
     nixpkgsFlake.nixosSystem {
       inherit system;
       specialArgs = inputs // (specialArgs system);
@@ -61,7 +68,8 @@ rec {
 
           { config.networking.hostName = hostName; }
         ];
-    };
+    }
+    |> builtins.trace "Building NixOS system for ${hostName}...";
 
   isEnvTrue =
     var:

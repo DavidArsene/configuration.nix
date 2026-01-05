@@ -2,8 +2,14 @@
   lib,
   pkgs,
   mypkgs,
+  newpkgs,
   ...
 }:
+let
+  # TODO: https://github.com/garuda-linux/garuda-nix-subsystem/blob/main/internal/modules/base/performance.nix
+  # kernel = mypkgs.cachyos-kernel;
+  kernel = newpkgs.linuxPackages_latest;
+in
 {
   # Lenovo Legion Slim 7 (AMD Gen 8) 16APH8
 
@@ -12,49 +18,45 @@
     #    mypkgs.fprintd-fpc
   ];
 
-  boot = rec {
+  boot = {
+    # TODO: include "nvme" directly in custom kernels
+    # TODO: so that initrd can be completely removed.
     initrd.availableKernelModules = [ "nvme" ];
     # ++ [ "ata_piix" "sr_mod" ]; # VBox
     # ++ [ "sdhci_acpi" "xhci_pci" ]; # Misc
     # ++ [ "hid_generic" "hid_lenovo" ]; # LUKS in initrd
-    initrd.includeDefaultModules = false;
 
-    kernelModules = (map (p: p.name) extraModulePackages) ++ [ "kvm-amd" ];
+    # TODO: test if extraModulePackages are auto loaded
+    kernelModules = [ "kvm-amd" ];
 
     blacklistedKernelModules = [
       "sp5100_tco" # watchdog
       "k10temp" # replaced by zenpower
-
-      "nouveau"
-      "nvidia"
-      "nvidiafb"
-      "nvidia-drm"
-      "nvidia-uvm"
-      "nvidia-modeset"
     ];
 
-    # kernelPackages = mypkgs.cachyos-kernel;
-    kernelPackages = pkgs.linuxPackages_zen;
+    kernelPackages = kernel;
 
-    extraModulePackages = with kernelPackages; [
+    extraModulePackages = with kernel; [
       bbswitch
       cpupower
-      # lenovo-legion-module
+      # lenovo-legion-module FIXME:
       zenpower
     ];
 
-    loader.efi.canTouchEfiVariables = true;
     # Fix startup ACPI errors; TODO: find correct year
     kernelParams = [
       # ''acpi_osi="!"''
       ''acpi_osi="Windows 2021"''
+
       ''amd_pstate=active''
     ];
+
+    loader.efi.canTouchEfiVariables = true;
   };
 
-  # pkgs instead of edge for matching QT version
   environment.systemPackages = with pkgs; [
-    # lenovo-legion
+    # lenovo-legion FIXME:
+    nvidia-system-monitor-qt
     ryzenadj
     ryzen-monitor-ng
   ];
@@ -99,30 +101,33 @@
     };
 
     nvidia = {
+      dynamicBoost.enable = true;
       modesetting.enable = true;
       powerManagement.enable = true;
       powerManagement.finegrained = true;
-      # nvidia-smi wakes gpu and doesn't reflect real state
+      # ! nvidia-smi wakes gpu and doesn't reflect real state
 
       prime = {
-        offload.enable = true;
-        offload.enableOffloadCmd = true;
-
+        offload = {
+          enable = true;
+          enableOffloadCmd = true;
+          offloadCmdMainProgram = "prime-run";
+        };
         amdgpuBusId = "PCI:100:0:0";
         nvidiaBusId = "PCI:1:0:0";
       };
 
-      dynamicBoost.enable = true;
       open = true;
-
-      # package = config.boot.kernelPackages.nvidiaPackages.beta;
+      package = kernel.nvidiaPackages.beta.override {
+        disable32Bit = true; # TODO: add to minimal.nix
+      };
     };
 
     usbStorage.manageShutdown = true;
 
     firmware = [
       # dmesg | rg "Direct firmware load for"
-      (mypkgs.linux-firmware-minimal.override {
+      (mypkgs.firmware-minimal.override {
 
         # ! Don't forget to change hash
         blobs = [
@@ -162,8 +167,8 @@
           ${pkgs.util-linux}/bin/rename -v 17aa38b4 17aa38b7 cirrus/*
         '';
 
-        hash = "sha256-h56zS7fGiD9Nm9ksvLTzQ0mAKGwHh+BU4jcD91lAB+0=";
-        tag = "20251111";
+        hash = "sha256-nh46WgxTbYTrz04IgJrV8pJozJAofFF7VD+75iolzwk=";
+        tag = "20251125";
       })
     ];
   };
@@ -177,19 +182,25 @@
     wantedBy = [ "multi-user.target" ];
   };
 
-  # Mostly from nixos-hardware
+  #* Mostly from nixos-hardware
   services = {
-    # Weird way to enable NVIDIA drivers but ok
-    # xserver.videoDrivers = [ "nvidia" ];
+    #* Weird way to enable NVIDIA drivers but ok
+    xserver.videoDrivers = [ "nvidia" ];
 
-    # AMD has better battery life with PPD over TLP:
+    #* > AMD has better battery life with PPD over TLP:
     # https://community.frame.work/t/responded-amd-7040-sleep-states/38101/13
     power-profiles-daemon.enable = true;
+    tlp.enable = false; # TODO: TRY
+    # TODO: ALSO THIS
+    # echo powersupersave > /sys/module/pcie_aspm/parameters/policy
+    # ^^^ what are those
+    # appears to change `lspci -vv | grep 'ASPM.*abled;'`
 
     fstrim.enable = true;
 
     fwupd = {
       enable = true;
+      extraRemotes = [ "lvfs-testing" ];
     };
 
   };

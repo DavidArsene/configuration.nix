@@ -1,31 +1,33 @@
 {
-  config,
   custom,
   mylib,
-  edge ? pkgs,
   pkgs,
-  zen,
+  mypkgs,
+  newpkgs,
+  kwin-blur,
+  # zen,
   ...
 }:
 let
+  kpkgs = pkgs.kdePackages;
 
-  #> QT apps need a consistent set of Qt libraries
+  #? QT apps need a consistent set of Qt libraries
   qtPackages =
     with pkgs;
-    with pkgs.kdePackages;
+    with kpkgs;
     [
-      #> Official KDE
+      #* Official KDE
       filelight
       kate
       kdeconnect-kde
       # kdevelop
-      # krita # after qt6 migration
+      # krita #* after qt6 migration
       plasma-sdk
       yakuake
 
       # TODO: .desktop file for qdbusviewer
 
-      #> Random KDE
+      #* Random KDE
       # falkon
       # kasts
       kcalc
@@ -34,42 +36,40 @@ let
       krusader
       konqueror
 
-      #> Obscure KDE
-      # calligra
+      #* Obscure KDE
       ksystemlog
-      # kgpg
-      # kleopatra
       kdebugsettings
-      #      kmahjongg
-      #      marble
-      #      okteta
-      #      elf-dissector
+      keysmith
 
-      #> Everything else
+      #* Everything else
       btrfs-assistant
+      # easyeffects
       karousel
+      notify-desktop
       qalculate-qt
       qbittorrent
       qc
       qMasterPassword-wayland
       # qownnotes
       (mylib.mkFreshOnly qdirstat)
-      # spotify-qt
-      # supergfxctl-plasmoid
       uefitool
       waycheck
+
+      kwin-blur.packages.${custom.system}.default
+
+      nixd # TODO: for kate
     ];
 
-  #> Larger apps to be updated slower
+  #? Larger apps to be updated slower
   otherPackages = with pkgs; [
     #> Use same Electron version
-    (mylib.mkFreshOnly vesktop)
-    (mylib.mkFreshOnly zapzap)
-    # equicord # Vencord fork
+    equibop # Vencord fork
+    zapzap
     # ayugram-desktop
+    # losslesscut-bin
+    # newpkgs.beeper
 
     mitmproxy
-    # httptoolkit
     # p3x-onenote
 
     #> And less frequently used
@@ -77,21 +77,21 @@ let
     tpm2-pkcs11
     tpm2-tools
     tpm2-totp
+    uefisettings
     # onlyoffice-desktopeditors
 
-    # (callPackage ../pkgs/libreoffice.nix { })
-  ];
+    # mypkgs.libreoffice
+    mypkgs.helium
 
-  edgePackages = with edge; [
+    # ];
+    # edgePackages = with newpkgs; [
+
     # TODO: remove policies when issue
-    #! (zen.packages.${custom.system}.twilight.override { extraPolicies = firefoxPolicies; })
-    # cromite
+    #    (mylib.mkFreshOnly (
+    #      zen.packages.${custom.system}.twilight.override { extraPolicies = firefoxPolicies; }
+    #    ))
 
-    # mission-center
-    # trayscale
-    # waydroid-helper
-
-    uefisettings
+    # appimageupdate
 
     btrfs-heatmap
     compsize
@@ -99,9 +99,11 @@ let
     pciutils
     usbtop
     usbutils
-
-    # librespot
   ];
+
+  #!
+  #! TODO: RDP Server
+  #!
 
   firefoxPolicies = {
     CaptivePortal = false;
@@ -119,26 +121,9 @@ let
     # GoToIntranetSiteForSingleWordEntryInAddressBar
     # LegacyProfiles
   };
-
 in
 
 {
-  #> Use NetworkManager on desktop for easy Wi-Fi
-  networking.networkmanager = {
-    enable = true;
-    dns = "systemd-resolved";
-    plugins = [ ];
-
-    wifi.backend = "iwd";
-    wifi.powersave = true;
-    # todo sh -c 'echo 2 > /proc/sys/net/ipv6/conf/wlan0/use_tempaddr' failed with exit code 1.
-  };
-  #> Why are these two not linked?
-  #> Tailscale fooled me by providing its own DNS resolver,
-  #> leading to network being broken when not used.
-  services.resolved.enable = !config.services.tailscale.enable;
-  # TODO: meh
-
   services = {
     displayManager.sddm.enable = true;
     desktopManager.plasma6.enable = true;
@@ -152,19 +137,20 @@ in
 
   security.rtkit.enable = true;
 
-  environment.systemPackages = qtPackages ++ otherPackages ++ edgePackages;
-
   #> GUI Programs
   programs = {
     partition-manager.enable = true;
+    # appimage.enable = true;
+    # appimage.binfmt = true;
   };
 
-  #> What's the difference between NFM and NF fonts?
-  #> https://github.com/ryanoasis/nerd-fonts/discussions/945
+  #? Difference between NFM and NF fonts
+  #? https://github.com/ryanoasis/nerd-fonts/discussions/945
   fonts.packages =
     with pkgs;
-    with pkgs.nerd-fonts;
+    with nerd-fonts;
     [
+      noto-fonts-color-emoji
       # twemoji-color-font
       # code-new-roman
       # comic-shanns-mono
@@ -172,4 +158,56 @@ in
       # jetbrains-mono
       symbols-only
     ];
+
+  i18n.inputMethod = {
+    enable = true;
+    type = "ibus";
+    ibus.panel = "${kpkgs.plasma-desktop}/libexec/kimpanel-ibus-panel";
+    ibus.engines = with pkgs.ibus-engines; [
+      uniemoji
+      (typing-booster.override {
+        langs = [
+          "en-us-large"
+          "ro-ro"
+        ];
+      })
+    ];
+  };
+
+  environment.systemPackages =
+    qtPackages
+    ++ otherPackages
+    # ++ edgePackages
+    ++ (with kpkgs; [
+      # qtimageformats # provides optional image formats such as .webp and .avif
+      kio # provides helper service + a bunch of other stuff
+      kio-admin # managing files as admin
+      kio-extras # stuff for MTP, AFC, etc
+      kio-fuse # fuse interface for KIO
+      knighttime # night mode switching daemon
+      kpackage # provides kpackagetool tool
+      kwalletmanager # provides KCMs and stuff
+      solid # provides solid-hardware6 tool
+      kdegraphics-thumbnailers # pdf etc thumbnailer
+      kde-gtk-config # syncs KDE settings to GTK
+      breeze-gtk
+      ocean-sound-theme
+      # pkgs.hicolor-icon-theme # fallback icons
+      kmenuedit
+      kinfocenter
+      plasma-systemmonitor
+      aurorae
+      plasma-browser-integration
+      konsole
+      ark
+      gwenview
+      okular
+      kate
+      ktexteditor # provides elevated actions for kate
+      dolphin
+      baloo-widgets # baloo information in Dolphin
+      dolphin-plugins
+      spectacle
+      krdp
+    ]);
 }

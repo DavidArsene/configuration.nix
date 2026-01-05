@@ -1,7 +1,7 @@
 {
-  edge ? pkgs,
   pkgs,
   mypkgs,
+  newpkgs,
   ...
 }:
 let
@@ -16,10 +16,16 @@ let
     qt6.qttools
   ];
 
-  devishPrograms = with edge; [
+  devishPrograms = with pkgs; [
+    # newpkgs.jetbrains-toolbox
+
+    newpkgs.cachix
+    newpkgs.devenv
     i2c-tools
     shellcheck-minimal
     kdePackages.kdialog
+
+    # frescobaldi
 
     # (pkgs.python3Minimal.withPackages (python-pkgs: [
     #  pycryptodome
@@ -33,44 +39,47 @@ let
     # jadx
     # apktool
     # scrcpy
+
+    atuin-desktop
+  ];
+
+  big-brain-hacker = with pkgs; [
+    binwalk
+    # edl
+
+    #! mypkgs.ida-pro
+    # idea
+    (mypkgs.idplugmanager-ro-cei.override { withHiddenFeatures = true; })
   ];
 
   APPDATA = "/C:/Users/David/AppData";
   product = "JetBrains/IntelliJIdea";
   baseDir = "${APPDATA}/Roaming/${product}";
 
-  big-brain-hacker = with pkgs; [
-    binwalk
-    # edl
-    mtkclient
+  idea = (
+    mypkgs.better-idea.override {
+      extraProperties = {
+        # "idea.is.internal" = "true";
+        "idea.ignore.plugin.compatibility" = "true";
 
-    #! mypkgs.ida-pro
+        "idea.diagnostic.opentelemetry.metrics.file" = "";
+        "idea.diagnostic.opentelemetry.meters.file.json" = "";
 
-    /*
-      (mypkgs.idea-aio.override {
-        extraProperties = {
-          "idea.ignore.plugin.compatibility" = "true";
-          "ide.browser.jcef.sandbox.enable" = "false";
+        "idea.system.path" = "${APPDATA}/Local/${product}";
+        "idea.config.path" = baseDir;
+        "idea.plugins.path" = "${baseDir}/plugins";
+        "idea.log.path" = "/tmp/IntelliJIdeaLogs"; # "${baseDir}/logs";
 
-          "idea.system.path" = "${APPDATA}/Local/${product}";
-          "idea.config.path" = baseDir;
-          "idea.plugins.path" = "${baseDir}/plugins";
-          "idea.log.path" = "/tmp/IntelliJIdeaLogs"; # "${baseDir}/logs";
-        };
-        extraArgs = [
-          "-Dno.backup=true"
-
-          "-javaagent:/D:/Programs/jetbra/fentanyl.jar=jetbrains"
-          "--add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED"
-          "--add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED"
-
-          "-Didea.diagnostic.opentelemetry.metrics.file="
-          "-Didea.diagnostic.opentelemetry.meters.file.json="
-        ];
-        withDebugFeatures = true;
-      })
-    */
-  ];
+        "machine.id.disabled" = "true"; # Used by update checker
+        # "no.backup" = "true"; # For patch updates, not really useful here
+      };
+      extraArgs = [
+        "-javaagent:/D:/Programs/jetbra/fentanyl.jar=jetbrains"
+        "--add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED"
+        "--add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED"
+      ];
+    }
+  );
 
 in
 {

@@ -5,25 +5,14 @@
       mylib = (import ./mylib.nix) inputs;
       myModules = mylib.allAvailableModules;
 
-      # nixpkgsWrapped = minimal.wrapNixpkgs inputs.nixpkgs;
       newpkgsWrapped = minimal.wrapNixpkgs inputs.newpkgs;
-
-      mypkgs =
-        (
-          inputs.mypkgs
-          // {
-            inputs.nixpkgs = {
-              legacyPackages = throw 1;
-            };
-          }
-        ).packages;
+      mypkgs = inputs.mypkgs.packages;
 
       # TODO: IJ nix-idea search lib shiftshift action
       mkSystem = mylib.mkSystem {
 
         specialArgs = system: {
-          edge = newpkgsWrapped.legacyPackages.${system};
-
+          newpkgs = newpkgsWrapped.legacyPackages.${system};
           inherit mylib mypkgs; # TODO: move to mylib boiler (and custom.system)
 
           custom = {
@@ -35,45 +24,34 @@
         };
 
         modules = {
-
           external = with inputs; [
             minimal.nixosModules.default
+            inputs.mypkgs.nixosModules.fprintd-fpc
+            inputs.mypkgs.nixosModules.ro-mai-ca-chain
+
             nix-index-database.nixosModules.nix-index
             # nur.nixosModules.default
           ];
 
           common = with myModules; [
             common
+            networking
             nix
             programs
             shell
-
-            modern
           ];
 
           extra = {
             config.nixos.minify.everything = true;
           };
-
         };
-
       };
-
-      #
-      #
-      #
-      #
-      #TODO: STC_DEBUG=1
-      #STC_DISPLAY_ALL_UNITS=1.
-      #W
-      #
-      #
 
     in
     {
       nixosConfigurations = {
-        creeper = mkSystem {
-          hostName = "creeper";
+        phoenix = mkSystem {
+          hostName = "phoenix";
           system = "aarch64-linux";
         };
 
@@ -88,31 +66,58 @@
           ];
         };
       };
+
+      devShells.x86_64-linux =
+        let
+          _pkgs = newpkgsWrapped.legacyPackages.x86_64-linux;
+        in
+        {
+          xconfig = _pkgs.mkShell {
+            packages = with _pkgs; [
+
+              linux_latest
+              # (linux_latest.overrideAttrs (prev: {
+              #   nativeBuildInputs = prev.nativeBuildInputs ++ [
+              pkg-config
+              qt6.qtbase
+              #   ];
+              #   dontWrapQtApps = true;
+              # }))
+            ];
+          };
+        };
+
+      #? Expose inputs for CLI commands to use same system versions.
+      inherit inputs;
     };
 
   inputs = {
-    # nixpkgs.url = "github:NixOS/nixpkgs/7df7ff7d"; # regular updates for entire system
-    nixpkgs.follows = "newpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs/89c2b233"; # infrequent updates for entire system
+    # nixpkgs.follows = "newpkgs";
 
     newpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"; # bleeding edge
-    # newpkgs.url = "https://github.com/NixOS/nixpkgs/archive/nixos-unstable@%7B2025-11-11%7D.tar.gz";
+    # https://github.com/NixOS/nixpkgs/archive/nixos-unstable@%7B2025-11-11%7D.tar.gz
+    # FIXME: Almost works
 
-    # Has no dependencices, used to wrap other nixpkgs
+    # Has no dependencices, wrap any nixpkgs with wrapNixpkgs
     minimal.url = "github:DavidArsene/minimal.nix";
 
     # TODO: unfree with minimal
-    mypkgs.url = "/home/david/.nix/mypkgs.nix";
-    mypkgs.inputs.nixpkgs.follows = "newpkgs";
+    mypkgs.url = "github:DavidArsene/mypkgs.nix";
+    mypkgs.inputs.nixpkgs.follows = "nixpkgs";
 
     # nur.url = "github:nix-community/NUR";
     # nur.inputs.nixpkgs.follows = "newpkgs";
 
-    zen.url = "github:0xc000022070/zen-browser-flake";
-    zen.inputs.nixpkgs.follows = "newpkgs";
-    zen.inputs.home-manager.follows = "";
+    # zen.url = "github:0xc000022070/zen-browser-flake";
+    # zen.inputs.nixpkgs.follows = "nixpkgs";
+    # zen.inputs.home-manager.follows = "";
+
+    kwin-blur.url = "github:xarblu/kwin-effects-better-blur-dx";
+    kwin-blur.inputs.nixpkgs.follows = "nixpkgs";
 
     nix-index-database.url = "github:nix-community/nix-index-database";
-    nix-index-database.inputs.nixpkgs.follows = "newpkgs";
+    nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
 
     # nix-detsys.url = "https://flakehub.com/f/DeterminateSystems/nix-src/*";
     # nix-detsys.inputs.nixpkgs.follows = "newpkgs";
