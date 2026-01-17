@@ -1,68 +1,57 @@
 {
   outputs =
-    { minimal, ... }@inputs:
+    inputs:
     let
       mylib = (import ./mylib.nix) inputs;
-      myModules = mylib.allAvailableModules;
-
-      newpkgsWrapped = minimal.wrapNixpkgs inputs.newpkgs;
-      mypkgs = inputs.mypkgs.packages;
+      newpkgsWrapped = inputs.minimal.wrapNixpkgs inputs.newpkgs;
 
       # TODO: IJ nix-idea search lib shiftshift action
-      mkSystem = mylib.mkSystem {
+      mkSystem =
+        system:
+        mylib.mkSystem {
+          inherit system;
 
-        specialArgs = system: {
-          newpkgs = newpkgsWrapped.legacyPackages.${system};
-          inherit mylib mypkgs; # TODO: move to mylib boiler (and custom.system)
+          specialArgs = {
+            newpkgs = newpkgsWrapped.legacyPackages.${system};
+            mypkgs = inputs.mypkgs.packages;
 
-          custom = {
-            # Easy access to current arch
-            inherit system;
-            # Username used everywhere
-            myself = "david";
+            custom = {
+              # Easy access to current arch
+              inherit system;
+              # Username used everywhere
+              myself = "david";
+            };
           };
+
+          modules =
+            with inputs;
+            with mylib.userModules;
+            [
+              common
+              networking
+              nix
+              programs
+              shell
+
+              minimal.nixosModules.default
+              nix-index-database.nixosModules.nix-index
+            ];
         };
-
-        modules = {
-          external = with inputs; [
-            minimal.nixosModules.default
-            inputs.mypkgs.nixosModules.fprintd-fpc
-            inputs.mypkgs.nixosModules.ro-mai-ca-chain
-
-            nix-index-database.nixosModules.nix-index
-            # nur.nixosModules.default
-          ];
-
-          common = with myModules; [
-            common
-            networking
-            nix
-            programs
-            shell
-          ];
-
-          extra = {
-            config.nixos.minify.everything = true;
-          };
-        };
-      };
 
     in
     {
       nixosConfigurations = {
-        phoenix = mkSystem {
-          hostName = "phoenix";
-          system = "aarch64-linux";
-        };
+        phoenix = mkSystem "aarch64-linux" { hostName = "phoenix"; };
 
-        legionix = mkSystem {
+        legionix = mkSystem "x86_64-linux" {
           hostName = "legionix";
-          system = "x86_64-linux";
 
-          hostModules = with myModules; [
+          hostModules = with mylib.userModules; [
             desktop
             development
             gaming
+            inputs.mypkgs.nixosModules.fprintd-fpc
+            inputs.mypkgs.nixosModules.ro-cei-pcsc
           ];
         };
       };
@@ -92,22 +81,23 @@
     };
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/89c2b233"; # infrequent updates for entire system
-    # nixpkgs.follows = "newpkgs";
+    # nixpkgs.url = "github:NixOS/nixpkgs/89c2b233"; # infrequent updates for entire system
+    nixpkgs.follows = "newpkgs";
 
     newpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"; # bleeding edge
     # https://github.com/NixOS/nixpkgs/archive/nixos-unstable@%7B2025-11-11%7D.tar.gz
     # FIXME: Almost works
 
-    # Has no dependencices, wrap any nixpkgs with wrapNixpkgs
+    # Has no dependencices, wraps any nixpkgs with wrapNixpkgs
     minimal.url = "github:DavidArsene/minimal.nix";
 
     # TODO: unfree with minimal
     mypkgs.url = "github:DavidArsene/mypkgs.nix";
     mypkgs.inputs.nixpkgs.follows = "nixpkgs";
 
-    # nur.url = "github:nix-community/NUR";
-    # nur.inputs.nixpkgs.follows = "newpkgs";
+    nix-alien.url = "github:DavidArsene/nix-alien";
+    nix-alien.inputs.nixpkgs.follows = "nixpkgs";
+    nix-index-database.follows = "nix-alien/nix-index-database";
 
     # zen.url = "github:0xc000022070/zen-browser-flake";
     # zen.inputs.nixpkgs.follows = "nixpkgs";
@@ -115,9 +105,6 @@
 
     kwin-blur.url = "github:xarblu/kwin-effects-better-blur-dx";
     kwin-blur.inputs.nixpkgs.follows = "nixpkgs";
-
-    nix-index-database.url = "github:nix-community/nix-index-database";
-    nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
 
     # nix-detsys.url = "https://flakehub.com/f/DeterminateSystems/nix-src/*";
     # nix-detsys.inputs.nixpkgs.follows = "newpkgs";

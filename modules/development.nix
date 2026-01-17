@@ -25,6 +25,12 @@ let
     shellcheck-minimal
     kdePackages.kdialog
 
+    oci-cli
+    opentofu
+    step-ca
+    step-cli
+    #    global-platform-pro
+
     # frescobaldi
 
     # (pkgs.python3Minimal.withPackages (python-pkgs: [
@@ -40,7 +46,7 @@ let
     # apktool
     # scrcpy
 
-    atuin-desktop
+    # atuin-desktop
   ];
 
   big-brain-hacker = with pkgs; [
@@ -49,7 +55,7 @@ let
 
     #! mypkgs.ida-pro
     # idea
-    (mypkgs.idplugmanager-ro-cei.override { withHiddenFeatures = true; })
+    mypkgs.idplugmanager-ro-cei
   ];
 
   APPDATA = "/C:/Users/David/AppData";

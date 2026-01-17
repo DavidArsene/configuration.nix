@@ -6,18 +6,14 @@ bind \cL 'clear; commandline -f repaint'
 
 function fish_greeting
   fastfetch
+  echo; fortune
 
   cat /run/motd.d/* 2>/dev/null
 end
 
-function toggle-tailscale
-  if tailscale status
-    sudo systemctl start -v systemd-resolved
-    sudo tailscale down
-  else
-    sudo tailscale up
-    sudo systemctl stop -v systemd-resolved
-  end
+function mc
+  mkdir -p $argv[1]
+  cd $argv[1]
 end
 
 function nixpkgs-latest

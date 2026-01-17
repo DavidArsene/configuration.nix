@@ -52,8 +52,10 @@ let
       qMasterPassword-wayland
       # qownnotes
       (mylib.mkFreshOnly qdirstat)
+      tail-tray # trayscale but qt
       uefitool
       waycheck
+      wl-clipboard-rs
 
       kwin-blur.packages.${custom.system}.default
 
@@ -160,7 +162,7 @@ in
     ];
 
   i18n.inputMethod = {
-    enable = true;
+    enable = false; # ! FIXME
     type = "ibus";
     ibus.panel = "${kpkgs.plasma-desktop}/libexec/kimpanel-ibus-panel";
     ibus.engines = with pkgs.ibus-engines; [

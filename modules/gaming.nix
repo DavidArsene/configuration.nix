@@ -23,7 +23,10 @@ in
       # FIXME:
       # wineCustom
       # winetricks
-      umu-launcher
+      # umu-launcher
+
+      # TODO: wine for android
+      # android-translation-layer
 
       #> Dependencies
       # dxvk
@@ -39,6 +42,7 @@ in
         gamescopeSupport = false;
         lowerBitnessSupport = false;
       })
+      #      mangohud
 
       # (q4wine.override {
       #   wine = wineCustom;
@@ -52,9 +56,11 @@ in
     ])
 
     ++ (with pkgs; [
-      # (mypkgs.minecraft.prismlauncher-zing.override {
-      #   glfw-wayland = mylib.optimizedBuild pkgs mypkgs.minecraft.glfw-wayland;
-      # })
+      (mypkgs.minecraft.prismlauncher-zing.override {
+        glfw-wayland = mylib.optimizedBuild pkgs mypkgs.minecraft.glfw-wayland;
+      })
+      temurin-jre-bin-25
+      minim
       # olympus #> Mod Loader for Celeste
       #> Uses same dotnet
 

@@ -5,6 +5,9 @@
   ...
 }:
 {
+  # enable minimal.nix
+  nixos.minify.everything = true;
+
   boot.kernelParams = [
     # TODO: slower on Zen 4?
     "mitigations=off"
@@ -69,7 +72,7 @@
   users.users.${custom.myself} = {
     isNormalUser = true;
     description = "David";
-    # `input` required by CBF
+    # `input` required by GD CBF
     extraGroups = [
       "wheel"
       "input"
@@ -85,6 +88,9 @@
     memoryPercent = 100;
   };
 
+  services.nohang.enable = true;
+  # services.nohang.configPath = ./my-nohang-config.conf;
+
   security.doas.enable = true;
   # security.sudo.enable = false;
   security.sudo.wheelNeedsPassword = false;
@@ -98,16 +104,15 @@
   security.polkit.extraConfig = ''
 
     polkit.addRule(function(action, subject) {
+      polkit.log("Privileged action request:");
       polkit.log( action.toString());
       polkit.log(subject.toString());
 
       if (subject.local && subject.active && subject.isInGroup("wheel"))
       {
-        polkit.log("trivial: Authorized!");
+        polkit.log("Authorized quickly.");
         return polkit.Result.YES;
       }
-
-      polkit.log("trivial: Not Handled.");
     });
   '';
 

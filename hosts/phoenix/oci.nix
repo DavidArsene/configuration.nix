@@ -7,6 +7,7 @@
   # https://github.com/nix-community/infra/pull/1068
   # Make it easier to recover via serial console in case something goes wrong.
   services.getty.autologinUser = "root";
+  console.enable = lib.mkForce true;
 
   networking.interfaces.enp0s3.useDHCP = lib.mkDefault true;
 

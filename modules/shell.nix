@@ -15,9 +15,10 @@ in
     shellAliases = {
       l = "eza -lah@MF --color-scale --icons --hyperlink --group-directories-first --time-style relative";
       wget = "wget -q --show-progress";
+      pamtest = "${pkgs.pamtester}/bin/pamtester login $USER authenticate";
 
       nix = "nix --verbose --log-format bar-with-logs";
-      nrb = "STC_DEBUG=1 STC_DISPLAY_ALL_UNITS=1 nixos-rebuild --sudo --fast --verbose";
+      nrb = "sudo chown -v root:users /tmp; sudo chmod -v 0775 /tmp; nixos-rebuild --sudo --no-reexec";
       nrbdev = "nrb --override-input mypkgs ~/.nix/mypkgs.nix --override-input minimal ~/.nix/minimal.nix";
       rw-store = "sudo nsenter --env --mount --target (pgrep --oldest nix-daemon)";
     };
@@ -28,7 +29,7 @@ in
 
       dry = "nrbdev dry-build";
       switch = "nrbdev switch --log-format internal-json &| nom --json";
-      test = "nrbdev test --log-format internal-json &| nom --json";
+      try = "nrbdev test --log-format internal-json &| nom --json";
 
       ngc = "sudo nix-collect-garbage -d";
       ydep = "nix why-depends --all --precise";

@@ -15,7 +15,6 @@ in
 
   imports = [
     #    ./bitlocker.nix
-    #    mypkgs.fprintd-fpc
   ];
 
   boot = {
@@ -31,13 +30,13 @@ in
 
     blacklistedKernelModules = [
       "sp5100_tco" # watchdog
-      "k10temp" # replaced by zenpower
+      # "k10temp" # replaced by zenpower
     ];
 
     kernelPackages = kernel;
 
     extraModulePackages = with kernel; [
-      bbswitch
+      # bbswitch
       cpupower
       # lenovo-legion-module FIXME:
       zenpower
@@ -45,7 +44,7 @@ in
 
     # Fix startup ACPI errors; TODO: find correct year
     kernelParams = [
-      # ''acpi_osi="!"''
+      ''acpi_osi="!"''
       ''acpi_osi="Windows 2021"''
 
       ''amd_pstate=active''
@@ -55,8 +54,8 @@ in
   };
 
   environment.systemPackages = with pkgs; [
-    # lenovo-legion FIXME:
-    nvidia-system-monitor-qt
+    lenovo-legion
+    # nvidia-system-monitor-qt
     ryzenadj
     ryzen-monitor-ng
   ];
@@ -113,14 +112,17 @@ in
           enableOffloadCmd = true;
           offloadCmdMainProgram = "prime-run";
         };
-        amdgpuBusId = "PCI:100:0:0";
-        nvidiaBusId = "PCI:1:0:0";
+        # if lspci shows "0001:02:03.4", set this option to "PCI:2@1:3:4".
+        # lspci might omit the PCI domain (0001 in above example) if it is zero. Use "@0" instead.
+        # this option takes decimal while lspci reports hexadecimal. So for device at domain "10000", use "@65536".
+        amdgpuBusId = "PCI:100@0:0:0"; # lspci = (@0) 64:00.0
+        nvidiaBusId = "PCI:1@0:0:0"; # lspci = (@0) 01:00.0
       };
 
-      open = true;
-      package = kernel.nvidiaPackages.beta.override {
-        disable32Bit = true; # TODO: add to minimal.nix
-      };
+      open = false;
+      package = kernel.nvidiaPackages.beta; # .override {
+      #   disable32Bit = true; # TODO: add to minimal.nix
+      # };
     };
 
     usbStorage.manageShutdown = true;

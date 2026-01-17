@@ -1,14 +1,22 @@
-{ lib, ... }:
+{ lib, pkgs, ... }:
 {
   imports = [ ./oci.nix ];
 
   nix.buildMachines = lib.mkForce [ ];
-  console.enable = true;
 
-  programs.java.enable = lib.mkForce false;
+  programs.java.package = pkgs.temurin-jre-bin-25;
 
   services = {
+    # Enable IP forwarding required for exit nodes
+    tailscale.useRoutingFeatures = "server";
+
+    pihole-ftl = {
+      enable = true;
+      settings.misc.readOnly = false;
+    };
     pihole-web.enable = true;
+    pihole-web.ports = [ 169 ];
+
     technitium-dns-server.enable = true;
     unbound.enable = true;
   };

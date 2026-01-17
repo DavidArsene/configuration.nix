@@ -360,3 +360,5 @@ wireguard
 # 6.18
 hkdf
 sha1
+
+k10temp

@@ -1,8 +1,11 @@
 {
   config,
+  custom,
   mylib,
+  mypkgs,
   # pkgs,
   newpkgs,
+  nix-alien,
   ...
 }:
 let
@@ -25,6 +28,7 @@ in
     manix
     statix
     lon
+    nix-alien.package.${custom.system}
 
     #* Modern utilities
     bat # ? cat
@@ -60,6 +64,7 @@ in
     lsof
     mandoc # ? re-add if minimized
     modprobed-db
+    pamtester
     psmisc
     qrencode
     smartmontools
@@ -82,12 +87,11 @@ in
   ];
 
   programs.java = {
-    enable = false; # main difference: sets variable by shell init
-    # package = mypkgs.zing;
-    package = mylib.mkFreshOnly pkgs.jetbrains.jdk;
+    enable = true; # main difference: sets variable by shell init
+    package = mypkgs.minecraft.azul-zing;
+    # package = pkgs.jetbrains.jdk;
     binfmt = true;
   };
-  environment.variables.JAVA_HOME = "${config.programs.java.package}";
 
   programs.git = {
     enable = true;
@@ -107,6 +111,9 @@ in
     };
   };
 
+  # TODO: builder.sh remove-references-to
+
+  # TODO: scdaemon pcsc-driver= in config
   programs.gnupg.agent = {
     enable = true;
     enableSSHSupport = true;
