@@ -1,7 +1,16 @@
-{ config, newpkgs, ... }:
+{
+  config,
+  lib,
+  newpkgs,
+  mylib,
+  ...
+}:
 let
   pkgs = newpkgs; # LSP
+  bin = lib.getExe';
+  nom = "--log-format internal-json &| nom --json";
 in
+with pkgs;
 {
   users.defaultUserShell = config.programs.fish.package;
 
@@ -9,31 +18,43 @@ in
     enable = true;
     useBabelfish = true;
     # generateCompletions = true;
-    package = newpkgs.fish;
+    package = fish;
 
     #? Aliases are displayed as-is
     shellAliases = {
       l = "eza -lah@MF --color-scale --icons --hyperlink --group-directories-first --time-style relative";
-      wget = "wget -q --show-progress";
-      pamtest = "${pkgs.pamtester}/bin/pamtester login $USER authenticate";
+      pamtest = "${lib.getExe pamtester} login $USER authenticate";
 
-      nix = "nix --verbose --log-format bar-with-logs";
-      nrb = "sudo chown -v root:users /tmp; sudo chmod -v 0775 /tmp; nixos-rebuild --sudo --no-reexec";
+      nix = "command nix --verbose --print-build-logs"; # --log-format bar-with-logs";
+      # nixos-rebuild that also fixes the annoying "Path /tmp is world-writable" error
+      # https://github.com/NixOS/nix/issues/13701 - fix: remove w for a; sudo chown -v root:users /tmp;
+      nrb = "sudo chmod -v o-w /tmp; nixos-rebuild --sudo --no-reexec";
+      # override child flakes for local development
+      # TODO: find another way that works with the eval cache
       nrbdev = "nrb --override-input mypkgs ~/.nix/mypkgs.nix --override-input minimal ~/.nix/minimal.nix";
+      # nix run but with the already downloaded nixpkgs
+      nrn = "nix run --override-input nixpkgs nixpkgs";
+      # run any command with the ability to write to the nix store
       rw-store = "sudo nsenter --env --mount --target (pgrep --oldest nix-daemon)";
     };
 
     #? Abbreviations are expanded when typed
     shellAbbrs = {
       ltot = "l --total-size";
+      ",sh" = ", --shell";
+      # lmao
+      "pretty --set-cursor" =
+        "nix repl --file ./%.nix | ${bin colorized-logs "ansi2txt"} | ${bin wl-clipboard-rs "wl-copy"}";
 
-      dry = "nrbdev dry-build";
-      switch = "nrbdev switch --log-format internal-json &| nom --json";
-      try = "nrbdev test --log-format internal-json &| nom --json";
+      dry = "nrbdev dry-build --print-build-logs";
+      switch = "nrbdev switch ${nom}";
+      try = "nrbdev test ${nom}";
 
       ngc = "sudo nix-collect-garbage -d";
       ydep = "nix why-depends --all --precise";
       oldcfg = "nrb repl --flake /etc/source";
+      # Add custom expression to profile (not just flake#output)
+      "nprof --set-cursor" = "nix profile add --impure --expr 'with import <nixpkgs> { }; %'";
     };
 
     interactiveShellInit = "source ${../assets/config.fish}";
@@ -41,12 +62,12 @@ in
 
   programs.starship = {
     enable = true;
-    package = newpkgs.starship;
+    package = starship;
     # settings = { }; # TODO: declarative
     transientPrompt.enable = false;
   };
 
-  environment.systemPackages = with pkgs; [
+  environment.systemPackages = [
     atuin
     fastfetchMinimal
     nushell
@@ -58,8 +79,7 @@ in
     ncdu
     superfile
 
-    fortune
-    # (fortune.override { withOffensive = true; })
+    (mylib.mkFreshOnly (fortune.override { withOffensive = true; }))
   ];
 
   environment.etc."ncdu.conf".text = ''

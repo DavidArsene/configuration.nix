@@ -24,6 +24,8 @@ in
       # wineCustom
       # winetricks
       # umu-launcher
+      # steam-run-free
+      # wine-wayland
 
       # TODO: wine for android
       # android-translation-layer
@@ -36,13 +38,13 @@ in
 
       #> Extras
       # pkgs.goverlay
-      (mangohud.override {
-        #? No gamescope, mangoapp, and mangohudctl.
-        #? Removes OpenGL and Xorg dependencies.
-        gamescopeSupport = false;
-        lowerBitnessSupport = false;
-      })
-      #      mangohud
+      #      (mangohud.override {
+      #        #? No gamescope, mangoapp, and mangohudctl.
+      #        #? Removes OpenGL and Xorg dependencies.
+      #        gamescopeSupport = false;
+      #        lowerBitnessSupport = false;
+      #      })
+      mangohud
 
       # (q4wine.override {
       #   wine = wineCustom;
@@ -56,13 +58,9 @@ in
     ])
 
     ++ (with pkgs; [
-      (mypkgs.minecraft.prismlauncher-zing.override {
-        glfw-wayland = mylib.optimizedBuild pkgs mypkgs.minecraft.glfw-wayland;
-      })
-      temurin-jre-bin-25
-      minim
-      # olympus #> Mod Loader for Celeste
-      #> Uses same dotnet
+      #      (mypkgs.minecraft.prismlauncher-zing.override {
+      #        glfw-wayland = mylib.marchNative pkgs mypkgs.minecraft.glfw-wayland;
+      #      })
 
       the-powder-toy
 

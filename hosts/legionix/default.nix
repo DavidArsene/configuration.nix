@@ -1,12 +1,4 @@
 { pkgs, ... }:
-let
-  first = "05";
-  second = "11";
-
-  # Did you read the comment?
-  year = 2026;
-  half = first;
-in
 {
   imports = [ ./hardware.nix ];
 
@@ -38,5 +30,8 @@ in
     };
   };
 
-  system.stateVersion = "${toString (year - 2000)}.${half}";
+  services.usbmuxd.enable = true;
+
+  # HARRY DID YOU READ THE COMMENT?
+  system.stateVersion = "26.05";
 }

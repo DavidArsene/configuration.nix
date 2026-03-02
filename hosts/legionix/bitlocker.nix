@@ -85,6 +85,8 @@ with lib;
     };
   };
 
+  #* All of above, just to recreate this:
+
   environment.etc."crypttab" = {
     enable = false;
     mode = "0600";

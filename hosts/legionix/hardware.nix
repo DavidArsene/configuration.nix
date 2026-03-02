@@ -8,7 +8,7 @@
 let
   # TODO: https://github.com/garuda-linux/garuda-nix-subsystem/blob/main/internal/modules/base/performance.nix
   # kernel = mypkgs.cachyos-kernel;
-  kernel = newpkgs.linuxPackages_latest;
+  kernel = pkgs.linuxPackages_latest;
 in
 {
   # Lenovo Legion Slim 7 (AMD Gen 8) 16APH8
@@ -36,9 +36,8 @@ in
     kernelPackages = kernel;
 
     extraModulePackages = with kernel; [
-      # bbswitch
       cpupower
-      # lenovo-legion-module FIXME:
+      lenovo-legion-module
       zenpower
     ];
 
@@ -47,7 +46,7 @@ in
       ''acpi_osi="!"''
       ''acpi_osi="Windows 2021"''
 
-      ''amd_pstate=active''
+      "amd_pstate=active"
     ];
 
     loader.efi.canTouchEfiVariables = true;
@@ -119,7 +118,7 @@ in
         nvidiaBusId = "PCI:1@0:0:0"; # lspci = (@0) 01:00.0
       };
 
-      open = false;
+      open = false; # Pulls Rust to build :(
       package = kernel.nvidiaPackages.beta; # .override {
       #   disable32Bit = true; # TODO: add to minimal.nix
       # };
@@ -166,11 +165,11 @@ in
           mv -v nvidia/ad102/ nvidia/ad107/
 
           mv -v cirrus/cs35l41/v*/*.wmfw cirrus/cs35l41-dsp1-spk-prot-17aa38b4.wmfw
-          ${pkgs.util-linux}/bin/rename -v 17aa38b4 17aa38b7 cirrus/*
+          ${lib.getExe' pkgs.util-linux "rename"} -v 17aa38b4 17aa38b7 cirrus/*
         '';
 
-        hash = "sha256-nh46WgxTbYTrz04IgJrV8pJozJAofFF7VD+75iolzwk=";
-        tag = "20251125";
+        hash = "sha256-jh46WgxTbYTrz04IgJrV8pJozJAofFF7VD+75iolzwk=";
+        tag = pkgs.microcode-amd.version;
       })
     ];
   };
@@ -179,7 +178,7 @@ in
   systemd.services.powerbottom = {
     serviceConfig = {
       Type = "simple";
-      ExecStart = "${pkgs.bash}/bin/bash " + ./powertop.sh;
+      ExecStart = "${lib.getExe pkgs.bash} ${./powertop.sh}";
     };
     wantedBy = [ "multi-user.target" ];
   };
@@ -193,9 +192,11 @@ in
     # https://community.frame.work/t/responded-amd-7040-sleep-states/38101/13
     power-profiles-daemon.enable = true;
     tlp.enable = false; # TODO: TRY
-    # TODO: ALSO THIS
+    auto-cpufreq.enable = false;
+    auto-cpufreq.settings = { };
+
+    # FIXME: HEY this command breaks sleep, find reason, maybe its the same one
     # echo powersupersave > /sys/module/pcie_aspm/parameters/policy
-    # ^^^ what are those
     # appears to change `lspci -vv | grep 'ASPM.*abled;'`
 
     fstrim.enable = true;

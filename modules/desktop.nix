@@ -1,11 +1,8 @@
 {
-  custom,
   mylib,
   pkgs,
   mypkgs,
   newpkgs,
-  kwin-blur,
-  # zen,
   ...
 }:
 let
@@ -33,23 +30,24 @@ let
       kcalc
       kcharselect
       # kdenlive
-      krusader
-      konqueror
+      # krusader
+      # konqueror
 
       #* Obscure KDE
       ksystemlog
       kdebugsettings
-      keysmith
+      keysmith # 2FA
 
       #* Everything else
       btrfs-assistant
       # easyeffects
       karousel
+      # keepassxc # still on qt5
       notify-desktop
       qalculate-qt
       qbittorrent
       qc
-      qMasterPassword-wayland
+      # qMasterPassword
       # qownnotes
       (mylib.mkFreshOnly qdirstat)
       tail-tray # trayscale but qt
@@ -57,7 +55,7 @@ let
       waycheck
       wl-clipboard-rs
 
-      kwin-blur.packages.${custom.system}.default
+      # kwin-blur.packages.${custom.system}.default
 
       nixd # TODO: for kate
     ];
@@ -67,12 +65,11 @@ let
     #> Use same Electron version
     equibop # Vencord fork
     zapzap
-    # ayugram-desktop
+    ayugram-desktop
     # losslesscut-bin
     # newpkgs.beeper
 
     mitmproxy
-    # p3x-onenote
 
     #> And less frequently used
     cryptsetup
@@ -85,14 +82,8 @@ let
     # mypkgs.libreoffice
     mypkgs.helium
 
-    # ];
-    # edgePackages = with newpkgs; [
-
-    # TODO: remove policies when issue
-    #    (mylib.mkFreshOnly (
-    #      zen.packages.${custom.system}.twilight.override { extraPolicies = firefoxPolicies; }
-    #    ))
-
+  ];
+  newPackages = with newpkgs; [
     # appimageupdate
 
     btrfs-heatmap
@@ -106,28 +97,11 @@ let
   #!
   #! TODO: RDP Server
   #!
-
-  firefoxPolicies = {
-    CaptivePortal = false;
-    Cookies.Behavior = "reject-foreign";
-    DisableAppUpdate = true;
-    DisableFirefoxStudies = false; # see about:studies
-    DisableProfileRefresh = true;
-    DisableSetDesktopBackground = true;
-    DisableTelemetry = false;
-    # DNSOverHTTPS
-    DontCheckDefaultBrowser = true;
-    EnableTrackingProtection.Value = false; # uBlock?
-    # ExtensionUpdate
-    # FirefoxHome
-    # GoToIntranetSiteForSingleWordEntryInAddressBar
-    # LegacyProfiles
-  };
 in
 
 {
   services = {
-    displayManager.sddm.enable = true;
+    displayManager.plasma-login-manager.enable = true;
     desktopManager.plasma6.enable = true;
 
     udisks2.mountOnMedia = true;
@@ -179,7 +153,7 @@ in
   environment.systemPackages =
     qtPackages
     ++ otherPackages
-    # ++ edgePackages
+    ++ newPackages
     ++ (with kpkgs; [
       # qtimageformats # provides optional image formats such as .webp and .avif
       kio # provides helper service + a bunch of other stuff

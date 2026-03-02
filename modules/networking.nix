@@ -1,7 +1,5 @@
-{ config, newpkgs, ... }:
+{ config, ... }:
 let
-  pkgs = newpkgs;
-
   #? Defaults to checking display managers.
   isDesktop = config.services.displayManager.enable;
 
@@ -35,7 +33,6 @@ in
     tailscale = {
       enable = true;
       disableUpstreamLogging = true;
-      # package = pkgs.tailscale;
     };
   };
 

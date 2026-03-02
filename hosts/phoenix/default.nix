@@ -6,6 +6,14 @@
 
   programs.java.package = pkgs.temurin-jre-bin-25;
 
+  environment.systemPackages = with pkgs; [
+    fex-headless
+    #? All the options for using FEX RootFS images
+    erofs-utils
+    squashfsTools
+    squashfuse
+  ];
+
   services = {
     # Enable IP forwarding required for exit nodes
     tailscale.useRoutingFeatures = "server";

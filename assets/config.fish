@@ -8,7 +8,10 @@ function fish_greeting
   fastfetch
   echo; fortune
 
-  cat /run/motd.d/* 2>/dev/null
+  # wildcard always acts like failglob, unless in a for, set etc.
+  for motd in /run/motd.d/*
+    cat $motd
+  end
 end
 
 function mc

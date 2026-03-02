@@ -1,35 +1,19 @@
 {
-  config,
-  custom,
   mylib,
   mypkgs,
-  # pkgs,
+  pkgs,
   newpkgs,
-  nix-alien,
+  lib,
   ...
 }:
 let
   # Preserve LSP features
   pkgs = newpkgs;
+
+  theGlobalJava = pkgs.jetbrains.jdk-no-jcef;
 in
 {
-  # TODO: find x86_64-v4 precompileds
   environment.systemPackages = with pkgs; [
-    #* Nix
-    nix-derivation
-    # nix-fast-build
-    # nix-forecast
-    # nix-inspect
-    # nix-locate
-    nix-output-monitor
-    nix-tree
-    # nix-update TODO:
-    dix
-    manix
-    statix
-    lon
-    nix-alien.package.${custom.system}
-
     #* Modern utilities
     bat # ? cat
     btop # ? htop
@@ -37,7 +21,7 @@ in
     difftastic # ? diff
     doggo # ? dig
     eza # ? ls
-    fd # * everybody hates gnu find
+    fd # ? find
     glances
     hexyl # ? xxd
     kmon
@@ -46,7 +30,7 @@ in
     seccure
     sequoia-chameleon-gnupg # ? exact gpg replacement
     sequoia-sq # ? gpg reimplementation
-    sequoia-sqop # ? stateless opengpg
+    sequoia-sop # ? stateless opengpg
     sequoia-wot # ? web of trust something
     xh # ? wget
     zenith # ? htop
@@ -72,10 +56,9 @@ in
     strace-analyzer
     # sysdig #? big deps
 
-    #* sigh why not already in path
     jq
+    theGlobalJava
     which
-    wget
 
     clevis
     efivar
@@ -87,11 +70,11 @@ in
   ];
 
   programs.java = {
-    enable = true; # main difference: sets variable by shell init
-    package = mypkgs.minecraft.azul-zing;
-    # package = pkgs.jetbrains.jdk;
-    binfmt = true;
+    enable = false; # sets variable by shell init, currently babelfish broken
+    binfmt = true; # no alternative for this, but meh
+    package = theGlobalJava;
   };
+  # environment.variables.JAVA_HOME = "${theGlobalJava.home}";
 
   programs.git = {
     enable = true;
@@ -99,12 +82,12 @@ in
       user.name = "DavidArsene";
       user.email = "80218600+DavidArsene@users.noreply.github.com";
 
-      core.pager = "delta"; # TODO: difftastic
+      # core.pager = "delta";
       diff = {
         external = "difft";
         tool = "difftastic";
       };
-      interactive.diffFilter = "delta --color-only";
+      # interactive.diffFilter = "delta --color-only";
       # delta.line-numbers = true;
       # delta.navigate = true;
       merge.conflictstyle = "zdiff3";

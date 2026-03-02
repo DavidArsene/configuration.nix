@@ -33,7 +33,9 @@
               programs
               shell
 
-              minimal.nixosModules.default
+              minimal.nixosModules.main
+              minimal.nixosModules.kde
+              minimal.nixosModules.systemPath
               nix-index-database.nixosModules.nix-index
             ];
         };
@@ -50,38 +52,19 @@
             desktop
             development
             gaming
+            spicetify
             inputs.mypkgs.nixosModules.fprintd-fpc
-            inputs.mypkgs.nixosModules.ro-cei-pcsc
+            # inputs.mypkgs.nixosModules.ro-cei-pcsc
           ];
         };
       };
-
-      devShells.x86_64-linux =
-        let
-          _pkgs = newpkgsWrapped.legacyPackages.x86_64-linux;
-        in
-        {
-          xconfig = _pkgs.mkShell {
-            packages = with _pkgs; [
-
-              linux_latest
-              # (linux_latest.overrideAttrs (prev: {
-              #   nativeBuildInputs = prev.nativeBuildInputs ++ [
-              pkg-config
-              qt6.qtbase
-              #   ];
-              #   dontWrapQtApps = true;
-              # }))
-            ];
-          };
-        };
 
       #? Expose inputs for CLI commands to use same system versions.
       inherit inputs;
     };
 
   inputs = {
-    # nixpkgs.url = "github:NixOS/nixpkgs/89c2b233"; # infrequent updates for entire system
+    #    nixpkgs.url = "github:NixOS/nixpkgs/9f0c42f8"; # infrequent updates for entire system
     nixpkgs.follows = "newpkgs";
 
     newpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"; # bleeding edge
@@ -99,6 +82,10 @@
     nix-alien.inputs.nixpkgs.follows = "nixpkgs";
     nix-index-database.follows = "nix-alien/nix-index-database";
 
+    spicetify.url = "github:Gerg-L/spicetify-nix";
+    spicetify.inputs.nixpkgs.follows = "newpkgs";
+    spicetify.inputs.systems.follows = "kwin-blur/utils/systems";
+
     # zen.url = "github:0xc000022070/zen-browser-flake";
     # zen.inputs.nixpkgs.follows = "nixpkgs";
     # zen.inputs.home-manager.follows = "";
@@ -106,15 +93,7 @@
     kwin-blur.url = "github:xarblu/kwin-effects-better-blur-dx";
     kwin-blur.inputs.nixpkgs.follows = "nixpkgs";
 
-    # nix-detsys.url = "https://flakehub.com/f/DeterminateSystems/nix-src/*";
-    # nix-detsys.inputs.nixpkgs.follows = "newpkgs";
-
-    # who even needs determinate-nixd
-    # nix-detsys.inputs = {
-    #   flake-parts.follows = "nur/flake-parts";
-    #   nixpkgs-23-11.follows = "";
-    #   nixpkgs-regression.follows = "";
-    #   git-hooks-nix.follows = "";
-    # };
+    # nix-custom.url = "github:DavidArsene/nix";
+    # nix-custom.inputs.nixpkgs.follows = "newpkgs";
   };
 }

@@ -1,8 +1,9 @@
 {
   config,
   custom,
-  # detsys,
-  pkgs,
+  newpkgs,
+  nix-alien,
+  # nix-custom,
   self,
   ...
 }:
@@ -19,10 +20,7 @@
       # max-jobs = 0; # delegate all builds to server
       sandbox = "relaxed";
       # show-trace = true;
-      trusted-substituters = [
-        "https://install.determinate.systems"
-        "https://nix-community.cachix.org"
-      ];
+      trusted-substituters = [ "https://nix-community.cachix.org" ];
       trusted-users = [ "@wheel" ];
       warn-dirty = false;
     }
@@ -40,13 +38,15 @@
         "pipe-operators"
       ];
       use-xdg-base-directories = true;
-      # lazy-trees = true;
+
+      lazy-trees = true;
     };
 
     channel.enable = false;
 
     # package = pkgs.lix;
-    package = pkgs.nixVersions.latest;
+    # package = pkgs.nixVersions.latest;
+    # package = nix-custom.packages.${custom.system}.default;
     # Modernizing ends here.
 
     buildMachines = [
@@ -68,21 +68,29 @@
       }
     ];
     distributedBuilds = true;
-
-    # package = (getdef detsys).overrideAttrs (old: {
-    #   doCheck = false; # TODO: what causes it to build?
-    #   doInstallCheck = false;
-    #   withAWS = false;
-    # });
-    # package = nix-detsys.packages.${pkgs.system}.default.override {
-    #   withAWS = false;
-    # };
   };
 
-  programs = {
-    nix-ld.enable = true;
-    # nix-ld.libraries = [];
+  environment.systemPackages = with newpkgs; [
+    nix-derivation
+    # nix-fast-build
+    # nix-forecast
+    # nix-inspect
+    # nix-locate
+    nix-output-monitor
+    nix-tree
+    # nix-update TODO:
+    dix
+    manix
+    statix
+    lon
+    nix-alien.package.${custom.system}
+  ];
 
+  programs = {
+    nix-ld = {
+      enable = true;
+      libraries = [ ];
+    };
     nix-index-database.comma.enable = true;
   };
 
@@ -97,10 +105,10 @@
   };
 
   system.nixos.label = config.system.nixos.release;
-  system.nixos.extraLSBReleaseArgs = {
-    LSB_VERSION = "Unstable"; # TODO: fix
-    DISTRIB_DESCRIPTION = "NixOS Enterprise ${config.system.nixos.release}";
-  };
+  # system.nixos.extraLSBReleaseArgs = {
+  #   LSB_VERSION = "Unstable"; # TODO: fix
+  #   DISTRIB_DESCRIPTION = "NixOS Enterprise ${config.system.nixos.release}";
+  # };
 
   environment.localBinInPath = true;
   environment.sessionVariables.NIXOS_OZONE_WL = "1";

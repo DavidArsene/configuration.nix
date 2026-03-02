@@ -9,7 +9,7 @@ let
     #? to being frequently rebuilt without changes.
     mkFreshOnly = pkg: lib.mkIf (isEnvTrue "FRESH_INSTALL") pkg;
 
-    optimizedBuild =
+    marchNative =
       pkgs: pkg:
       pkg.overrideAttrs rec {
         stdenv = pkgs.stdenvAdapters.impureUseNativeOptimizations pkgs.fastStdenv;
@@ -56,7 +56,15 @@ let
           ++ hostModules
           ++ [
             ./hosts/${hostName}
-            { config.networking.hostName = hostName; }
+            {
+              config.networking.hostName = hostName;
+              config.nix.registry = lib.mapAttrs (k: v: {
+                to = {
+                  type = "path";
+                  path = v;
+                };
+              }) inputs;
+            }
           ];
       }
       |> builtins.trace "Building NixOS system for ${hostName}...";

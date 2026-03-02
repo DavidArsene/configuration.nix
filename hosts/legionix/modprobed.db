@@ -362,3 +362,17 @@ hkdf
 sha1
 
 k10temp
+
+# oci
+polyval_ce
+qemu_fw_cfg
+sm4
+virtio_dma_buf
+virtio_gpu
+virtio_scsi
+
+apple_mfi_fastcharge
+ipheth
+netlink_diag
+
+ntsync
