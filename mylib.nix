@@ -1,7 +1,6 @@
-{ nixpkgs, minimal, ... }@inputs:
+inputs:
 let
-  lib = nixpkgs.lib;
-  nixpkgsFlake = minimal.wrapNixpkgs nixpkgs;
+  lib = inputs.nixpkgs.lib;
 
   this = rec {
     #? Used to install all packages, including ones
@@ -43,7 +42,7 @@ let
       }:
 
       #! Use the the custom nixosSystem from minimal.nix
-      nixpkgsFlake.nixosSystem {
+      lib.nixosSystem {
         inherit system;
         specialArgs = inputs // specialArgs // { mylib = this; };
 

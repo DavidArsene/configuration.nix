@@ -3,7 +3,6 @@
     inputs:
     let
       mylib = (import ./mylib.nix) inputs;
-      newpkgsWrapped = inputs.minimal.wrapNixpkgs inputs.newpkgs;
 
       # TODO: IJ nix-idea search lib shiftshift action
       mkSystem =
@@ -12,13 +11,13 @@
           inherit system;
 
           specialArgs = {
-            newpkgs = newpkgsWrapped.legacyPackages.${system};
+            newpkgs = inputs.newpkgs.legacyPackages.${system};
             mypkgs = inputs.mypkgs.packages;
 
             custom = {
               # Easy access to current arch
               inherit system;
-              # Username used everywhere
+              # Username to use everywhere
               myself = "david";
             };
           };
@@ -34,7 +33,6 @@
               shell
 
               minimal.nixosModules.main
-              minimal.nixosModules.kde
               minimal.nixosModules.systemPath
               nix-index-database.nixosModules.nix-index
             ];
@@ -48,14 +46,18 @@
         legionix = mkSystem "x86_64-linux" {
           hostName = "legionix";
 
-          hostModules = with mylib.userModules; [
-            desktop
-            development
-            gaming
-            spicetify
-            inputs.mypkgs.nixosModules.fprintd-fpc
-            # inputs.mypkgs.nixosModules.ro-cei-pcsc
-          ];
+          hostModules =
+            with inputs;
+            with mylib.userModules;
+            [
+              desktop
+              development
+              gaming
+              spicetify
+              mypkgs.nixosModules.fprintd-fpc
+              # mypkgs.nixosModules.ro-cei-pcsc
+              minimal.nixosModules.kde
+            ];
         };
       };
 
@@ -64,18 +66,23 @@
     };
 
   inputs = {
-    #    nixpkgs.url = "github:NixOS/nixpkgs/9f0c42f8"; # infrequent updates for entire system
-    nixpkgs.follows = "newpkgs";
+    #? wrapper for nixpkgs inputs to set allowUnfree
+    nixpkgs.url = "git+https://gist.github.com/DavidArsene/67cade0eb2629d875712c6283ae1557d";
+    #? Use nixpkgs.inputs.nixpkgs to set the source for the underlying nixpkgs
 
-    newpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"; # bleeding edge
-    # https://github.com/NixOS/nixpkgs/archive/nixos-unstable@%7B2025-11-11%7D.tar.gz
-    # FIXME: Almost works
+    # infrequent updates for entire system
+    nixpkgs.inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    # nixpkgs.inputs.nixpkgs.follows = "newpkgs/nixpkgs";
 
-    # Has no dependencices, wraps any nixpkgs with wrapNixpkgs
+    #? clone the wrapper to use more instances of nixpkgs
+    newpkgs.follows = "nixpkgs";
+    # bleeding edge
+    # newpkgs.inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+    # Has no dependencices
     minimal.url = "github:DavidArsene/minimal.nix";
 
-    # TODO: unfree with minimal
-    mypkgs.url = "github:DavidArsene/mypkgs.nix";
+    mypkgs.url = "github:DavidArsene/nur.nix";
     mypkgs.inputs.nixpkgs.follows = "nixpkgs";
 
     nix-alien.url = "github:DavidArsene/nix-alien";
@@ -83,17 +90,16 @@
     nix-index-database.follows = "nix-alien/nix-index-database";
 
     spicetify.url = "github:Gerg-L/spicetify-nix";
-    spicetify.inputs.nixpkgs.follows = "newpkgs";
+    spicetify.inputs.nixpkgs.follows = "nixpkgs";
     spicetify.inputs.systems.follows = "kwin-blur/utils/systems";
-
-    # zen.url = "github:0xc000022070/zen-browser-flake";
-    # zen.inputs.nixpkgs.follows = "nixpkgs";
-    # zen.inputs.home-manager.follows = "";
 
     kwin-blur.url = "github:xarblu/kwin-effects-better-blur-dx";
     kwin-blur.inputs.nixpkgs.follows = "nixpkgs";
 
     # nix-custom.url = "github:DavidArsene/nix";
     # nix-custom.inputs.nixpkgs.follows = "newpkgs";
+
+    # FIXME: Almost works
+    # https://github.com/NixOS/nixpkgs/archive/nixos-unstable@%7B2025-11-11%7D.tar.gz
   };
 }
