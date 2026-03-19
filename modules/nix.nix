@@ -1,9 +1,11 @@
 {
   config,
   custom,
+  mylib,
   newpkgs,
   nix-alien,
-  # nix-custom,
+  nix-custom,
+  pkgs,
   self,
   ...
 }:
@@ -46,7 +48,7 @@
 
     # package = pkgs.lix;
     # package = pkgs.nixVersions.latest;
-    # package = nix-custom.packages.${custom.system}.default;
+    package = mylib.marchNative pkgs nix-custom.packages.${custom.system}.default;
     # Modernizing ends here.
 
     buildMachines = [

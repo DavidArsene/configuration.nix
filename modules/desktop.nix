@@ -32,11 +32,13 @@ let
       # kdenlive
       # krusader
       # konqueror
+      krfb
 
       #* Obscure KDE
       ksystemlog
       kdebugsettings
       keysmith # 2FA
+      systemdgenie
 
       #* Everything else
       btrfs-assistant

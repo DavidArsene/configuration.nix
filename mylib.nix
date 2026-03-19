@@ -18,13 +18,8 @@ let
     userModules =
       with lib;
       builtins.readDir ./modules
-      |> attrNames
-      |> filter (hasSuffix ".nix")
-      |> map (filename: {
-        name = removeSuffix ".nix" filename;
-        value = ./modules/${filename};
-      })
-      |> listToAttrs;
+      |> filterAttrs (name: _: hasSuffix ".nix" name)
+      |> mapAttrs' (name: _: nameValuePair (removeSuffix ".nix" name) (./modules/${name}));
 
     #? Wrapper for everything (?) needed for a multi-host NixOS flake.
     #? Call this first with common customizations for all hosts,

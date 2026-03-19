@@ -49,6 +49,7 @@ in
     mandoc # ? re-add if minimized
     modprobed-db
     pamtester
+    plocate
     psmisc
     qrencode
     smartmontools

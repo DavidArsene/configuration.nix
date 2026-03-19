@@ -1,5 +1,6 @@
 {
   pkgs,
+  mylib,
   mypkgs,
   newpkgs,
   ...
@@ -41,15 +42,18 @@ let
     # apktool
     # scrcpy
 
-    ytdl-sub
+    # ytdl-sub
+    xlsclients # -a -l
     # atuin-desktop
+
+    zed-editor
   ];
 
   big-brain-hacker = with pkgs; [
     binwalk
     # edl
 
-    idea
+    (mylib.mkFreshOnly idea)
     mypkgs.idplugmanager-ro-cei
   ];
 

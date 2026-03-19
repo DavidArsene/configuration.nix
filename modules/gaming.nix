@@ -23,8 +23,7 @@ in
       # FIXME:
       # wineCustom
       # winetricks
-      # umu-launcher
-      # steam-run-free
+      steam-run-free
       # wine-wayland
 
       # TODO: wine for android
@@ -72,11 +71,11 @@ in
   comment = ''
     reaper does: prctl(36, 1, 0, 0, 0) != -1
 
-        $STEAM/ubuntu12_32/reaper SteamLaunch AppId=348550 \
-        -- $STEAM/ubuntu12_32/steam-launch-wrapper \
-        -- $STEAM/steamapps/common/SteamLinuxRuntime_sniper/_v2-entry-point --verb=waitforexitandrun \
-        -- $STEAM/compatibilitytools.d/GE-Proton8-27/proton waitforexitandrun \
-        $STEAM/steamapps/common/Game/Game.exe
+    $STEAM/ubuntu12_32/reaper SteamLaunch AppId=348550 \
+    -- $STEAM/ubuntu12_32/steam-launch-wrapper \
+    -- $STEAM/steamapps/common/SteamLinuxRuntime_sniper/_v2-entry-point --verb=waitforexitandrun \
+    -- $STEAM/compatibilitytools.d/GE-Proton8-27/proton waitforexitandrun \
+    $STEAM/steamapps/common/Game/Game.exe
   '';
 
   environment.sessionVariables = { };

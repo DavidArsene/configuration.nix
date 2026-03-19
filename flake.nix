@@ -96,8 +96,9 @@
     kwin-blur.url = "github:xarblu/kwin-effects-better-blur-dx";
     kwin-blur.inputs.nixpkgs.follows = "nixpkgs";
 
-    # nix-custom.url = "github:DavidArsene/nix";
-    # nix-custom.inputs.nixpkgs.follows = "newpkgs";
+    nix-custom.url = "github:DavidArsene/nix";
+    nix-custom.inputs.nixpkgs.follows = "nixpkgs/nixpkgs";
+    # TODO: add default.nix to nixpkgs wrapper for "import nixpkgs" support
 
     # FIXME: Almost works
     # https://github.com/NixOS/nixpkgs/archive/nixos-unstable@%7B2025-11-11%7D.tar.gz

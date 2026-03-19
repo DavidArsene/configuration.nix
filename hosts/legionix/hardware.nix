@@ -44,7 +44,7 @@ in
     # Fix startup ACPI errors; TODO: find correct year
     kernelParams = [
       ''acpi_osi="!"''
-      ''acpi_osi="Windows 2021"''
+      ''acpi_osi="Windows 2015"''
 
       "amd_pstate=active"
     ];
@@ -118,7 +118,7 @@ in
         nvidiaBusId = "PCI:1@0:0:0"; # lspci = (@0) 01:00.0
       };
 
-      open = false; # Pulls Rust to build :(
+      open = true;
       package = kernel.nvidiaPackages.beta; # .override {
       #   disable32Bit = true; # TODO: add to minimal.nix
       # };

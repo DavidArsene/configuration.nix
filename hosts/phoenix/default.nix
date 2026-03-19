@@ -27,6 +27,16 @@
 
     technitium-dns-server.enable = true;
     unbound.enable = true;
+
+    stirling-pdf = {
+      enable = true;
+    };
+
+    factorio = {
+      enable = false; # setup fex first
+      nonBlockingSaving = true;
+      lan = true;
+    };
   };
 
   system.stateVersion = "26.05"; # Did you read the comment?
