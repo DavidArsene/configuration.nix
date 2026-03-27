@@ -31,7 +31,7 @@ with pkgs;
       nrb = "sudo chmod -v o-w /tmp; nixos-rebuild --sudo --no-reexec";
       # override child flakes for local development
       # TODO: find another way that works with the eval cache
-      nrbdev = "nrb --override-input mypkgs ~/.nix/mypkgs.nix --override-input minimal ~/.nix/minimal.nix";
+      nrbdev = "nrb --override-input mypkgs ~/.nix/nur.nix";
       # nix run but with the already downloaded nixpkgs
       nrn = "nix run --override-input nixpkgs nixpkgs";
       # run any command with the ability to write to the nix store

@@ -30,8 +30,8 @@ in
     seccure
     sequoia-chameleon-gnupg # ? exact gpg replacement
     sequoia-sq # ? gpg reimplementation
-    sequoia-sop # ? stateless opengpg
-    sequoia-wot # ? web of trust something
+    # sequoia-sop # ? stateless opengpg
+    # sequoia-wot # ? web of trust something
     xh # ? wget
     zenith # ? htop
 
@@ -73,7 +73,7 @@ in
   programs.java = {
     enable = false; # sets variable by shell init, currently babelfish broken
     binfmt = true; # no alternative for this, but meh
-    package = theGlobalJava;
+    package = lib.mkDefault theGlobalJava;
   };
   # environment.variables.JAVA_HOME = "${theGlobalJava.home}";
 

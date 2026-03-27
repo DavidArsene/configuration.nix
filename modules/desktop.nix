@@ -59,7 +59,7 @@ let
 
       # kwin-blur.packages.${custom.system}.default
 
-      nixd # TODO: for kate
+      # nixd # TODO: for kate
     ];
 
   #? Larger apps to be updated slower
@@ -179,7 +179,7 @@ in
       konsole
       ark
       gwenview
-      okular
+      # okular
       kate
       ktexteditor # provides elevated actions for kate
       dolphin

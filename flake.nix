@@ -34,7 +34,7 @@
 
               minimal.nixosModules.main
               minimal.nixosModules.systemPath
-              nix-index-database.nixosModules.nix-index
+              nix-index-db.nixosModules.nix-index
             ];
         };
 
@@ -85,9 +85,8 @@
     mypkgs.url = "github:DavidArsene/nur.nix";
     mypkgs.inputs.nixpkgs.follows = "nixpkgs";
 
-    nix-alien.url = "github:DavidArsene/nix-alien";
-    nix-alien.inputs.nixpkgs.follows = "nixpkgs";
-    nix-index-database.follows = "nix-alien/nix-index-database";
+    nix-index-db.url = "github:nix-community/nix-index-database";
+    nix-index-db.inputs.nixpkgs.follows = "nixpkgs";
 
     spicetify.url = "github:Gerg-L/spicetify-nix";
     spicetify.inputs.nixpkgs.follows = "nixpkgs";

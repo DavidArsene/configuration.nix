@@ -8,7 +8,7 @@
 let
   devishPrograms = with pkgs; [
     newpkgs.cachix
-    newpkgs.devenv
+    # newpkgs.devenv
     i2c-tools
     shellcheck-minimal
     kdePackages.kdialog
@@ -46,14 +46,14 @@ let
     xlsclients # -a -l
     # atuin-desktop
 
-    zed-editor
+    # zed-editor
   ];
 
   big-brain-hacker = with pkgs; [
     binwalk
     # edl
 
-    (mylib.mkFreshOnly idea)
+    idea
     mypkgs.idplugmanager-ro-cei
   ];
 

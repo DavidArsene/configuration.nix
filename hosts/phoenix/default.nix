@@ -1,4 +1,9 @@
-{ lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 {
   imports = [ ./oci.nix ];
 
@@ -28,14 +33,55 @@
     technitium-dns-server.enable = true;
     unbound.enable = true;
 
-    stirling-pdf = {
-      enable = true;
-    };
-
     factorio = {
       enable = false; # setup fex first
       nonBlockingSaving = true;
       lan = true;
+    };
+
+    cloudflared = {
+      enable = true;
+      tunnels = {
+        "${config.networking.hostName}" = {
+          ingress = {
+            "pdf.davidarsene.ro" = "http://localhost:8080";
+          };
+          default = "http_status:404";
+          edgeIPVersion = "6";
+        };
+      };
+    };
+
+    stirling-pdf = {
+      enable = true;
+      package =
+        let
+          variants = {
+            backendOnly = "-server";
+            openSource = "";
+            commercial = "-with-login";
+          };
+          homepage = "https://github.com/Stirling-Tools/Stirling-PDF";
+          version = "2.7.3";
+        in
+        pkgs.fetchurl {
+          url = "${homepage}/releases/download/v${version}/Stirling-PDF${variants.commercial}.jar";
+          hash = "sha256-bw6tPeZBWzD62Aa+0GfNAghDDRzf92ovs3gpZNgobs0=";
+        };
+    };
+  };
+
+  systemd.services.stirling-pdf = {
+    path = with pkgs; [
+      # calibre FIXME: big; also provides ebook-convert
+      # rar FIXME: not in aarch64
+      ffmpeg-headless
+      imagemagick
+      fontforge # -fonttools ??
+    ];
+
+    serviceConfig = {
+      ExecStart = lib.mkForce "${lib.getExe config.programs.java.package} -jar ${config.services.stirling-pdf.package}";
     };
   };
 

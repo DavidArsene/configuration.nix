@@ -12,7 +12,7 @@ let
       pkgs: pkg:
       pkg.overrideAttrs rec {
         stdenv = pkgs.stdenvAdapters.impureUseNativeOptimizations pkgs.fastStdenv;
-        buildPackages.stdenv = stdenv;
+        # buildPackages.stdenv = stdenv;
       };
 
     userModules =

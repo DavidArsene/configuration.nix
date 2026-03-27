@@ -3,7 +3,6 @@
   custom,
   mylib,
   newpkgs,
-  nix-alien,
   nix-custom,
   pkgs,
   self,
@@ -84,8 +83,8 @@
     dix
     manix
     statix
-    lon
-    nix-alien.package.${custom.system}
+    # lon
+    # nix-alien.package.${custom.system}
   ];
 
   programs = {

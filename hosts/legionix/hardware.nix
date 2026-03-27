@@ -41,12 +41,29 @@ in
       zenpower
     ];
 
-    # Fix startup ACPI errors; TODO: find correct year
     kernelParams = [
-      ''acpi_osi="!"''
-      ''acpi_osi="Windows 2015"''
+      # TODO: look for debug messages in dmesg
+      "acpi_enforce_resources=lax"
+      
+      ''acpi_osi=!''
+      ''acpi_osi="Windows 2017"''
 
       "amd_pstate=active"
+      
+      # Additional logs
+      # NOTE: prefer startup only
+      "amd_iommu_dump=1"
+      "apic=verbose"
+      "console_msg_format=syslog"
+      "earlyprintk=vga"
+      "hpet=verbose"
+      # "ignore_loglevel"
+      "lsm.debug=1"
+      
+      # FIXME: keep?
+      "audit=off"
+      "bgrt_disable"
+      "cfi=off"
     ];
 
     loader.efi.canTouchEfiVariables = true;
@@ -94,8 +111,8 @@ in
     cpu.amd.updateMicrocode = true;
 
     amdgpu = {
-      overdrive.enable = true;
-      overdrive.ppfeaturemask = "0xffffffff";
+      # overdrive.enable = true;
+      # overdrive.ppfeaturemask = "0xffffffff";
     };
 
     nvidia = {
@@ -168,7 +185,7 @@ in
           ${lib.getExe' pkgs.util-linux "rename"} -v 17aa38b4 17aa38b7 cirrus/*
         '';
 
-        hash = "sha256-jh46WgxTbYTrz04IgJrV8pJozJAofFF7VD+75iolzwk=";
+        hash = "sha256-oqBFvZxX7FzDpwXzPSRpBS+tBjdSGLrDSv/gSxDPhYc=";
         tag = pkgs.microcode-amd.version;
       })
     ];
