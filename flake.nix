@@ -12,6 +12,7 @@
 
           specialArgs = {
             newpkgs = inputs.newpkgs.legacyPackages.${system};
+            oldpkgs = inputs.oldpkgs.legacyPackages.${system};
             mypkgs = inputs.mypkgs.packages;
 
             custom = {
@@ -30,6 +31,7 @@
               networking
               nix
               programs
+              samba
               shell
 
               minimal.nixosModules.main
@@ -68,16 +70,15 @@
   inputs = {
     #? wrapper for nixpkgs inputs to set allowUnfree
     nixpkgs.url = "git+https://gist.github.com/DavidArsene/67cade0eb2629d875712c6283ae1557d";
-    #? Use nixpkgs.inputs.nixpkgs to set the source for the underlying nixpkgs
+    #? Use nixpkgs.inputs.src to set the source for the underlying nixpkgs
 
     # infrequent updates for entire system
-    nixpkgs.inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    # nixpkgs.inputs.nixpkgs.follows = "newpkgs/nixpkgs";
+    nixpkgs.inputs.src.url = "github:NixOS/nixpkgs/b12141ef619e0a9c1c84dc8c684040326f27cdcc";
+    # nixpkgs.follows = "newpkgs";
 
-    #? clone the wrapper to use more instances of nixpkgs
-    newpkgs.follows = "nixpkgs";
     # bleeding edge
-    # newpkgs.inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    newpkgs.url = "git+https://gist.github.com/DavidArsene/67cade0eb2629d875712c6283ae1557d";
+    newpkgs.inputs.src.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     # Has no dependencices
     minimal.url = "github:DavidArsene/minimal.nix";
@@ -96,8 +97,7 @@
     kwin-blur.inputs.nixpkgs.follows = "nixpkgs";
 
     nix-custom.url = "github:DavidArsene/nix";
-    nix-custom.inputs.nixpkgs.follows = "nixpkgs/nixpkgs";
-    # TODO: add default.nix to nixpkgs wrapper for "import nixpkgs" support
+    nix-custom.inputs.nixpkgs.follows = "nixpkgs/src";
 
     # FIXME: Almost works
     # https://github.com/NixOS/nixpkgs/archive/nixos-unstable@%7B2025-11-11%7D.tar.gz

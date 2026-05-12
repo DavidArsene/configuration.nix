@@ -376,3 +376,32 @@ ipheth
 netlink_diag
 
 ntsync
+
+blake2b
+libblake2b
+md5
+
+r8153_ecm
+
+# USB Audio
+snd_rawmidi
+snd_ump
+snd_usb_audio
+snd_usbmidi_lib
+
+# xbox not xone
+mt76_usb
+mt76x02_lib
+mt76x02_usb
+mt76x2_common
+mt76x2u
+
+# 7.0
+lenovo_wmi_capdata
+snd_soc_acpi_amd_sdca_quirks
+
+# out of tree (may be problms)
+ff_memless
+xone_dongle
+xone_gip
+xone_gip_gamepad

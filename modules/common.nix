@@ -76,6 +76,7 @@
     extraGroups = [
       "wheel"
       "input"
+      "wireshark"
     ];
     hashedPassword = "$y$j9T$qziosG8H1ZEuu7FMixgtk0$4aTF5xoTyg1MzcH2yUcb1/L21w3IigoYdId.vEdLnA9";
   };

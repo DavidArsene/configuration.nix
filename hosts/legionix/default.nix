@@ -1,8 +1,7 @@
-{ pkgs, ... }:
+{ pkgs, custom, ... }:
 {
   imports = [ ./hardware.nix ];
 
-  virtualisation.virtualbox.guest.enable = false;
   # virtualisation.waydroid.enable = true;
 
   boot.loader.systemd-boot = {
@@ -12,13 +11,19 @@
     editor = false; # TODO: better default worthy?
 
     edk2-uefi-shell.enable = true;
-    netbootxyz.enable = true;
+    netbootxyz.enable = false;
 
     windows."11" = {
       title = "Windows 11";
       efiDeviceHandle = "HD0b";
       sortKey = "hahaha";
     };
+  };
+
+  services.duplicati = {
+    # enable = true; FIXME: good but large
+    user = custom.myself;
+    parameters = "";
   };
 
   programs.virt-manager.enable = false;
@@ -29,8 +34,17 @@
       package = pkgs.qemu_kvm;
     };
   };
+  # tap.vhost = true;
 
-  services.usbmuxd.enable = true;
+  virtualisation.incus = {
+    enable = false;
+    package = pkgs.incus; # default is lts
+    socketActivation = true;
+    #! agent.enable = true;
+    ui.enable = true;
+  };
+
+  # services.usbmuxd.enable = true;
 
   # HARRY DID YOU READ THE COMMENT?
   system.stateVersion = "26.05";

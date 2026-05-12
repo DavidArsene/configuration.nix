@@ -8,7 +8,6 @@
 let
   pkgs = newpkgs; # LSP
   bin = lib.getExe';
-  nom = "--log-format internal-json &| nom --json";
 in
 with pkgs;
 {
@@ -18,7 +17,7 @@ with pkgs;
     enable = true;
     useBabelfish = true;
     # generateCompletions = true;
-    package = fish;
+    package = fish; # from newpkgs
 
     #? Aliases are displayed as-is
     shellAliases = {
@@ -26,12 +25,6 @@ with pkgs;
       pamtest = "${lib.getExe pamtester} login $USER authenticate";
 
       nix = "command nix --verbose --print-build-logs"; # --log-format bar-with-logs";
-      # nixos-rebuild that also fixes the annoying "Path /tmp is world-writable" error
-      # https://github.com/NixOS/nix/issues/13701 - fix: remove w for a; sudo chown -v root:users /tmp;
-      nrb = "sudo chmod -v o-w /tmp; nixos-rebuild --sudo --no-reexec";
-      # override child flakes for local development
-      # TODO: find another way that works with the eval cache
-      nrbdev = "nrb --override-input mypkgs ~/.nix/nur.nix";
       # nix run but with the already downloaded nixpkgs
       nrn = "nix run --override-input nixpkgs nixpkgs";
       # run any command with the ability to write to the nix store
@@ -46,15 +39,12 @@ with pkgs;
       "pretty --set-cursor" =
         "nix repl --file ./%.nix | ${bin colorized-logs "ansi2txt"} | ${bin wl-clipboard-rs "wl-copy"}";
 
-      dry = "nrbdev dry-build --print-build-logs";
-      switch = "nrbdev switch ${nom}";
-      try = "nrbdev test ${nom}";
-
       ngc = "sudo nix-collect-garbage -d";
       ydep = "nix why-depends --all --precise";
       oldcfg = "nrb repl --flake /etc/source";
       # Add custom expression to profile (not just flake#output)
       "nprof --set-cursor" = "nix profile add --impure --expr 'with import <nixpkgs> { }; %'";
+      dm = "sudo dmesg --ctime --show-delta --decode";
     };
 
     interactiveShellInit = "source ${../assets/config.fish}";

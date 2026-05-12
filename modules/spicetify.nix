@@ -1,35 +1,45 @@
 {
   custom,
   spicetify,
-  newpkgs,
+  pkgs,
   ...
 }:
 let
   spicePkgs = spicetify.legacyPackages.${custom.system};
 
-  spicedSpotify = spicetify.lib.mkSpicetify newpkgs {
+  spicedSpotify = spicetify.lib.mkSpicetify pkgs {
+
+    # https://gerg-l.github.io/spicetify-nix/extensions.html
     enabledExtensions = with spicePkgs.extensions; [
       autoSkipVideo
       popupLyrics
       shuffle
       powerBar
       seekSong
+      skipOrPlayLikedSongs
       playlistIcons
       fullAlbumDate
       listPlaylistsWithSong
-      playlistIntersection
-      phraseToPlaylist
       wikify
-      writeify
+      featureShuffle
       songStats
+      autoVolume
+      showQueueDuration
       betterGenres
       playNext
+      playingSource
       sectionMarker
       beautifulLyrics
       aiBandBlocker
+      sortPlay
+      extendedCopy
+      madeForYouShortcut
+      romajiConvert
+      spicyLyrics
+      ytVideo
     ];
 
-    theme = spicePkgs.themes.text;
+    theme = spicePkgs.themes.dribbblishDynamic;
 
     alwaysEnableDevTools = true;
     experimentalFeatures = true;

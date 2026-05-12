@@ -15,7 +15,7 @@
       auto-optimise-store = true;
       build-dir = "/tmp/nixbld";
       builders-use-substitutes = true;
-      # flake-registry = "";
+      flake-registry = ""; # "global" registry, not used by CLIs
       fallback = false;
       keep-derivations = false; # Includes files from fetch{url,zip}
       # max-jobs = 0; # delegate all builds to server
@@ -40,7 +40,7 @@
       ];
       use-xdg-base-directories = true;
 
-      lazy-trees = true;
+      #lazy-trees = true;
     };
 
     channel.enable = false;
@@ -71,7 +71,7 @@
     distributedBuilds = true;
   };
 
-  environment.systemPackages = with newpkgs; [
+  environment.systemPackages = with pkgs; [
     nix-derivation
     # nix-fast-build
     # nix-forecast
@@ -115,15 +115,15 @@
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
   # TODO: Requires systemd in initrd, ruins my initrd-less boot plans
-  # system.etc.overlay.enable = true;
-  # system.etc.overlay.mutable = false;
-  # system.nixos-init.enable = true;
+  system.etc.overlay.enable = true;
+  system.etc.overlay.mutable = false;
+  system.nixos-init.enable = true;
   # boot.initrd.systemd.enable = true;
   # boot.initrd.systemd.emergencyAccess = config.users.users.${custom.myself}.hashedPassword;
   # boot.initrd.clevis.enable = true;
   boot.initrd.checkJournalingFS = true;
-  # services.userborn.enable = true;
-  # systemd.sysusers.enable = true;
+  services.userborn.enable = true;
+  #  systemd.sysusers.enable = true;
 
   comment.nixpkgs.config = {
     #? Would replace the boring "-source" suffix

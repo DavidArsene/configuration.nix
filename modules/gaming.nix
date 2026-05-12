@@ -1,4 +1,5 @@
 {
+  config,
   # nix-gaming,
   pkgs,
   mylib,
@@ -8,22 +9,17 @@
 }:
 let
   # pkgs = newpkgs; # LSP
+  steam-ran = if config.programs.steam.enable then pkgs.steam-run else pkgs.steam-run-free;
 in
 {
-  #  imports = with nix-gaming.nixosModules; [
-  #    platformOptimizations
-  #    wine
-  #  ];
-
   # TODO: home-manager
   # programs.mangohud.enable = true;
 
   environment.systemPackages =
-    (with newpkgs; [
-      # FIXME:
-      # wineCustom
+    (with pkgs; [
+      # (mylib.marchNative pkgs mypkgs.wine)
       # winetricks
-      steam-run-free
+      steam-ran
       # wine-wayland
 
       # TODO: wine for android
@@ -33,21 +29,19 @@ in
       # dxvk
       # vkd3d-proton
       lsfg-vk
-      (mylib.mkFreshOnly lsfg-vk-ui)
+      lsfg-vk-ui
 
       #> Extras
       # pkgs.goverlay
-      #      (mangohud.override {
-      #        #? No gamescope, mangoapp, and mangohudctl.
-      #        #? Removes OpenGL and Xorg dependencies.
-      #        gamescopeSupport = false;
-      #        lowerBitnessSupport = false;
-      #      })
+      # (mangohud.override {
+      #   #? No gamescope, mangoapp, and mangohudctl.
+      #   #? Removes OpenGL and Xorg dependencies.
+      #   gamescopeSupport = false;
+      #   lowerBitnessSupport = false;
+      # })
       mangohud
 
-      # (q4wine.override {
-      #   wine = wineCustom;
-      # })
+      # (q4wine.override { wine = wineCustom; })
 
       # TODO: no cuda?
       # nvtopPackages.nvidia
@@ -57,11 +51,9 @@ in
     ])
 
     ++ (with pkgs; [
-      #      (mypkgs.minecraft.prismlauncher-zing.override {
-      #        glfw-wayland = mylib.marchNative pkgs mypkgs.minecraft.glfw-wayland;
-      #      })
-
-      the-powder-toy
+      # (mypkgs.minecraft.prismlauncher-zing.override {
+      #   glfw-wayland = mylib.marchNative pkgs mypkgs.minecraft.glfw-wayland;
+      # })
 
       (mylib.mkFreshOnly dotnet-runtime) # > for Terraria / tModLoader
       innoextract # > for Windows GOG installers
@@ -86,8 +78,8 @@ in
 
   programs = {
     steam = {
-      enable = false;
-      package = newpkgs.steam.override {
+      enable = true;
+      package = pkgs.steam.override {
         extraEnv = {
           MANGOHUD = true;
         };

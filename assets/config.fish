@@ -14,12 +14,34 @@ function fish_greeting
   end
 end
 
-function mc
+function mkcd
   mkdir -p $argv[1]
   cd $argv[1]
 end
 
-function nixpkgs-latest
+
+function nrb
+  # fix the annoying "Path /tmp is world-writable" error
+  # https://github.com/NixOS/nix/issues/13701
+  sudo chmod -v o-w /tmp
+  sudo chown -v root:users /tmp
+
+  test -n "$HOST" # NB: use-substitutes included in nix config
+  and set host_args --target-host $HOST --build-host $HOST # --flake /etc/nixos#$HOST
+
+  # override child flakes for local development
+  # TODO: find another way that works with the eval cache
+  set dev --override-input mypkgs ~/.nix/nur.nix
+
+  if test "$argv[1]" = "dry"
+    nixos-rebuild dry-build $dev $host_args --print-build-logs
+  else
+    nixos-rebuild $argv $dev $host_args --sudo --no-reexec --log-format internal-json &| nom --json
+  end
+end
+
+
+function pkgs-branches
   for branch in master nixpkgs-unstable nixos-unstable
 
     set -l api (
@@ -29,10 +51,16 @@ function nixpkgs-latest
     echo -e $branch (date -d $api +"%d %b %Y - %H:%M")
   end | column -t -R 1 -S 1
 end
+# notify-send --expire-time 20000 --print-id nixpkgs "(pkgs-branches)"
 
-function notify-pkgs
-  set -l result (nixpkgs-latest)
-  notify-send --expire-time 20000 --print-id nixpkgs "$result"
+function alienate
+  set notfounds (ldd    $argv[1] | rg 'not found' | sd '=> not found|\s+' '')
+  set unuseds   (ldd -u $argv[1] | rg '\.so'      | sd               '\s' '')
+
+  set useds (for lib in $notfounds
+    contains -- $lib $unuseds; or echo $lib
+  end)
+
 end
 
 atuin  init fish | source

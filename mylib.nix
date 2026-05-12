@@ -9,17 +9,25 @@ let
     mkFreshOnly = pkg: lib.mkIf (isEnvTrue "FRESH_INSTALL") pkg;
 
     marchNative =
-      pkgs: pkg:
-      pkg.overrideAttrs rec {
+      pkgs:
+      let
         stdenv = pkgs.stdenvAdapters.impureUseNativeOptimizations pkgs.fastStdenv;
-        # buildPackages.stdenv = stdenv;
-      };
+      in
+      pkg:
+      # assert pkg == pkgs.${pkg.name};
+
+      builtins.trace "Building ${pkg.name} impurely for current buildPlatform..." (
+        pkg.overrideAttrs {
+          inherit stdenv;
+          # buildPackages.stdenv = stdenv;
+        }
+      );
 
     userModules =
       with lib;
       builtins.readDir ./modules
       |> filterAttrs (name: _: hasSuffix ".nix" name)
-      |> mapAttrs' (name: _: nameValuePair (removeSuffix ".nix" name) (./modules/${name}));
+      |> mapAttrs' (name: _: nameValuePair (removeSuffix ".nix" name) ./modules/${name});
 
     #? Wrapper for everything (?) needed for a multi-host NixOS flake.
     #? Call this first with common customizations for all hosts,
@@ -52,12 +60,12 @@ let
             ./hosts/${hostName}
             {
               config.networking.hostName = hostName;
-              config.nix.registry = lib.mapAttrs (k: v: {
-                to = {
-                  type = "path";
-                  path = v;
-                };
-              }) inputs;
+              #config.nix.registry = lib.mapAttrs (k: v: {
+              #  to = {
+              #    type = "path";
+              #    path = v;
+              #  };
+              #}) inputs;
             }
           ];
       }

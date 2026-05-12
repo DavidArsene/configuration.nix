@@ -1,11 +1,10 @@
-{ custom, pkgs }:
+{ custom, pkgs, ... }:
 {
   services.samba = {
-    enable = false;
+    enable = true;
     package = pkgs.samba.override {
       enableLDAP = true;
-      enableProfiling = false;
-      enableMDNS = false;
+      # enableMDNS = true;
       enableDomainController = true;
       enableRegedit = true;
     };

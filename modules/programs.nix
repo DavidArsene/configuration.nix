@@ -1,7 +1,6 @@
 {
   mylib,
   mypkgs,
-  pkgs,
   newpkgs,
   lib,
   ...
@@ -22,7 +21,7 @@ in
     doggo # ? dig
     eza # ? ls
     fd # ? find
-    glances
+    # glances
     hexyl # ? xxd
     kmon
     ripgrep # ? grep
@@ -36,9 +35,10 @@ in
     zenith # ? htop
 
     #* Everything else
-    _7zz-rar # ! NOT p7zip
+    _7zz-rar
     binutils
-    exiftool
+    copyparty-min # TODO: --help
+    (mylib.mkFreshOnly exiftool)
     fatrace
     file
     gh
@@ -57,7 +57,7 @@ in
     strace-analyzer
     # sysdig #? big deps
 
-    jq
+    yq-go
     theGlobalJava
     which
 
@@ -95,8 +95,6 @@ in
     };
   };
 
-  # TODO: builder.sh remove-references-to
-
   # TODO: scdaemon pcsc-driver= in config
   programs.gnupg.agent = {
     enable = true;
@@ -104,7 +102,7 @@ in
     settings = {
       # allow-mark-trusted = true;
       default-cache-ttl = 60 * 60 * 3;
-      # disable-scdaemon = true; # TODO: ?
+      disable-scdaemon = true;
     };
   };
 }

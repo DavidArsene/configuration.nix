@@ -18,7 +18,7 @@ let
       kate
       kdeconnect-kde
       # kdevelop
-      # krita #* after qt6 migration
+      # krita
       plasma-sdk
       yakuake
 
@@ -26,6 +26,7 @@ let
 
       #* Random KDE
       # falkon
+      # karton
       # kasts
       kcalc
       kcharselect
@@ -33,6 +34,7 @@ let
       # krusader
       # konqueror
       krfb
+      kweather
 
       #* Obscure KDE
       ksystemlog
@@ -45,13 +47,15 @@ let
       # easyeffects
       karousel
       # keepassxc # still on qt5
+      kontainer
       notify-desktop
       qalculate-qt
       qbittorrent
       qc
       # qMasterPassword
       # qownnotes
-      (mylib.mkFreshOnly qdirstat)
+      qdirstat
+      qt6.qttools
       tail-tray # trayscale but qt
       uefitool
       waycheck
@@ -66,12 +70,15 @@ let
   otherPackages = with pkgs; [
     #> Use same Electron version
     equibop # Vencord fork
-    zapzap
-    ayugram-desktop
+    # ayugram-desktop
     # losslesscut-bin
     # newpkgs.beeper
 
     mitmproxy
+
+    opendrop
+    packet
+    # rquickshare
 
     #> And less frequently used
     cryptsetup
@@ -158,22 +165,7 @@ in
     ++ newPackages
     ++ (with kpkgs; [
       # qtimageformats # provides optional image formats such as .webp and .avif
-      kio # provides helper service + a bunch of other stuff
-      kio-admin # managing files as admin
-      kio-extras # stuff for MTP, AFC, etc
-      kio-fuse # fuse interface for KIO
-      knighttime # night mode switching daemon
-      kpackage # provides kpackagetool tool
-      kwalletmanager # provides KCMs and stuff
-      solid # provides solid-hardware6 tool
-      kdegraphics-thumbnailers # pdf etc thumbnailer
-      kde-gtk-config # syncs KDE settings to GTK
-      breeze-gtk
-      ocean-sound-theme
-      # pkgs.hicolor-icon-theme # fallback icons
-      kmenuedit
-      kinfocenter
-      plasma-systemmonitor
+      # kdegraphics-thumbnailers # pdf etc thumbnailer
       aurorae
       plasma-browser-integration
       konsole
