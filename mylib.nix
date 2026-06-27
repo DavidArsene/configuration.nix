@@ -11,23 +11,35 @@ let
     marchNative =
       pkgs:
       let
-        stdenv = pkgs.stdenvAdapters.impureUseNativeOptimizations pkgs.fastStdenv;
+        nativeStdenv = pkgs.stdenvAdapters.impureUseNativeOptimizations pkgs.fastStdenv;
       in
+
       pkg:
-      # assert pkg == pkgs.${pkg.name};
 
-      builtins.trace "Building ${pkg.name} impurely for current buildPlatform..." (
-        pkg.overrideAttrs {
-          inherit stdenv;
-          # buildPackages.stdenv = stdenv;
-        }
-      );
+      # Ensure that pkg comes from this nixpkgs instance
+      # assert pkg == pkgs.${pkg.name}; FIXME
 
-    userModules =
-      with lib;
-      builtins.readDir ./modules
-      |> filterAttrs (name: _: hasSuffix ".nix" name)
-      |> mapAttrs' (name: _: nameValuePair (removeSuffix ".nix" name) ./modules/${name});
+      let
+        nativePkg = pkg.override {
+          stdenv = nativeStdenv;
+          # buildPackages.stdenv = nativeStdenv;
+        };
+      in
+
+      # Ensure stdenv was applied correctly
+      # TODO: more checks / overrides
+      # FIXME assert nativePkg.stdenv == nativeStdenv;
+
+      builtins.trace "Building ${pkg.name} impurely for ${nativeStdenv.system}..." nativePkg;
+
+    myModules =
+      (
+        with lib;
+        builtins.readDir ./modules
+        |> filterAttrs (name: _: hasSuffix ".nix" name)
+        |> mapAttrs' (name: _: nameValuePair (removeSuffix ".nix" name) ./modules/${name})
+      )
+      // inputs;
 
     #? Wrapper for everything (?) needed for a multi-host NixOS flake.
     #? Call this first with common customizations for all hosts,
@@ -60,12 +72,10 @@ let
             ./hosts/${hostName}
             {
               config.networking.hostName = hostName;
-              #config.nix.registry = lib.mapAttrs (k: v: {
-              #  to = {
-              #    type = "path";
-              #    path = v;
-              #  };
-              #}) inputs;
+              # config.nix.registry = lib.mapAttrs (k: v: {
+              #   to = { type = "path"; path = v; };
+              # }) inputs;
+              options.comment = lib.mkOption { type = lib.types.anything; };
             }
           ];
       }

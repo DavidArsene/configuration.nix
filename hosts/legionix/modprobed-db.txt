@@ -389,7 +389,7 @@ snd_ump
 snd_usb_audio
 snd_usbmidi_lib
 
-# xbox not xone
+# wifi but changed ids!?
 mt76_usb
 mt76x02_lib
 mt76x02_usb
@@ -405,3 +405,63 @@ ff_memless
 xone_dongle
 xone_gip
 xone_gip_gamepad
+
+# immutable /etc overlay
+erofs
+
+# qemu
+iommufd
+vfio
+vfio_iommu_type1
+vfio_pci
+vfio_pci_core
+vhost
+vhost_iotlb
+vhost_vsock
+vhost_net
+kvmfr
+
+# bt pan
+bnep
+
+# netfilter
+br_netfilter
+nf_conntrack_ftp
+nf_conntrack_h323
+nf_conntrack_irc
+nf_conntrack_pptp
+nf_conntrack_sip
+nf_conntrack_tftp
+nf_nat_ftp
+nf_nat_h323
+nf_nat_irc
+nf_nat_pptp
+nf_nat_sip
+nf_nat_tftp
+nfnetlink_queue
+nft_reject
+nft_reject_ipv4
+xt_comment
+
+rfcomm
+
+hid_plantronics
+ip6t_REJECT
+nf_reject_ipv6
+uhid
+
+# 7.1
+aead
+aes
+ctr
+gf128mul
+hsmp_common
+libsha3
+sha3
+sha512
+yogafan
+
+usblp
+
+# Finally!
+ntfs

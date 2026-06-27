@@ -2,7 +2,6 @@
   lib,
   pkgs,
   mypkgs,
-  newpkgs,
   ...
 }:
 let
@@ -20,10 +19,6 @@ in
 {
   # Lenovo Legion Slim 7 (AMD Gen 8) 16APH8
 
-  imports = [
-    #    ./bitlocker.nix
-  ];
-
   boot = {
     # TODO: include "nvme" directly in custom kernels
     # TODO: so that initrd can be completely removed.
@@ -32,14 +27,12 @@ in
     # ++ [ "sdhci_acpi" "xhci_pci" ]; # Misc
     # ++ [ "hid_generic" "hid_lenovo" ]; # LUKS in initrd
 
-    kernelModules = [
-      "kvm-amd"
-      "ntsync"
-    ];
+    kernelModules = [ "ntsync" ];
 
     blacklistedKernelModules = [
       "sp5100_tco" # watchdog
       # "k10temp" # replaced by zenpower
+      "ntfs3" # use NTFSPLUS
     ];
 
     kernelPackages = kernel;
@@ -61,7 +54,6 @@ in
 
       # Additional logs
       # NOTE: prefer startup only
-      "amd_iommu_dump=1"
       # "apic=verbose"
       "console_msg_format=syslog"
       # "earlyprintk=vga"
@@ -79,10 +71,11 @@ in
 
   environment.systemPackages = with pkgs; [
     #! mypkgs.lll
-    lenovo-legion
+    # lenovo-legion
     # nvidia-system-monitor-qt
     ryzenadj
     ryzen-monitor-ng
+    amdctl
   ];
 
   fileSystems = {
@@ -112,6 +105,15 @@ in
     };
   };
 
+  # TODO: useful?
+  comment.services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="usb", ATTR{power/wakeup}="disabled"
+    ACTION=="add", SUBSYSTEM=="pci", ATTR{power/wakeup}="disabled"
+  '';
+
+  # TODO: Steam still requires 32bit
+  nixos.minify.no32BitGraphics = lib.mkForce false;
+
   hardware = {
     cpu.amd.ryzen-smu.enable = true;
     cpu.amd.updateMicrocode = true;
@@ -119,6 +121,7 @@ in
     amdgpu = {
       # overdrive.enable = true;
       # overdrive.ppfeaturemask = "0xffffffff";
+      # initrd.enable = true; # bloats initrd by 15MB
     };
 
     nvidia = {
@@ -127,6 +130,8 @@ in
       powerManagement.enable = true;
       powerManagement.finegrained = true;
       # ! nvidia-smi wakes gpu and doesn't reflect real state
+
+      open = true;
 
       prime = {
         offload = {
@@ -142,22 +147,23 @@ in
         amdgpuBusId = "PCI:100@0:0:0"; # lspci = (@0) 64:00.0
         nvidiaBusId = "PCI:1@0:0:0"; # lspci = (@0) 01:00.0
       };
-
-      open = true;
-      package = kernel.nvidiaPackages.beta; # .override {
-      #   disable32Bit = true; # TODO: add to minimal.nix
-      # };
-    };
-
-    # TEST FIXME:
-    graphics = {
-      enable32Bit = lib.mkForce false;
-      # extraPackages = NOTHING;
-      extraPackages32 = lib.mkForce [ ];
     };
 
     # xone.enable = true;
     usbStorage.manageShutdown = true;
+
+    bluetooth = {
+      enable = true;
+      powerOnBoot = false;
+      settings = {
+        # https://github.com/bluez/bluez/blob/master/src/main.conf
+        General = {
+          Experimental = true;
+          Testing = true;
+          KernelExperimental = true;
+        };
+      };
+    };
 
     firmware = [
       # dmesg | rg "Direct firmware load for"
@@ -200,13 +206,21 @@ in
           mv -v nvidia/ad102/ nvidia/ad107/
 
           mv -v cirrus/cs35l41/v*/*.wmfw cirrus/cs35l41-dsp1-spk-prot-17aa38b4.wmfw
+          rmdir -v cirrus/cs35l41/v* || true
           ${lib.getExe' pkgs.util-linux "rename"} -v 17aa38b4 17aa38b7 cirrus/*
         '';
 
-        hash = "sha256-Os6z3wU7FKkkyHuaJEcRIDOr+haNSwkkmXzzFUJ2UZc=";
+        hash = "sha256-oIMkYHXQX54MI15CX3WShyP/v7/CzV3o9ssp/7AXIlc=";
         tag = pkgs.microcode-amd.version;
       })
     ];
+  };
+
+  environment.sessionVariables = {
+    # Force kwin to use iGPU (64 as seen in hardware.nvidia.prime)
+    # Otherwise depends on device initialization order.
+    KWIN_DRM_DEVICES = "/dev/dri/by-path/pci-0000\\\\:64\\\\:00.0-card";
+    # FIXME: this or amdgpu.initrd
   };
 
   powerManagement.enable = true;
@@ -242,10 +256,7 @@ in
     };
 
   };
+  # FIXME IMMEDIATE
+  systemd.services."fwupd-refresh".enable = false;
+  systemd.timers."fwupd-refresh".enable = false;
 }
-
-#removing obsolete symlink ‘/etc/pki/fwupd-metadata/GPG-KEY-Linux-Foundation-Metadata’...
-#removing obsolete symlink ‘/etc/pki/fwupd-metadata/GPG-KEY-Linux-Vendor-Firmware-Service’...
-#removing obsolete symlink ‘/etc/pki/fwupd/GPG-KEY-Linux-Foundation-Firmware’...
-#removing obsolete symlink ‘/etc/pki/fwupd/GPG-KEY-Linux-Vendor-Firmware-Service’...
-#restarting systemd...

@@ -1,8 +1,7 @@
 {
-  mylib,
   pkgs,
-  mypkgs,
   newpkgs,
+  helium-flake,
   ...
 }:
 let
@@ -40,6 +39,7 @@ let
       ksystemlog
       kdebugsettings
       keysmith # 2FA
+      kio-gdrive
       systemdgenie
 
       #* Everything else
@@ -47,10 +47,10 @@ let
       # easyeffects
       karousel
       # keepassxc # still on qt5
-      kontainer
+      # kontainer
       notify-desktop
       qalculate-qt
-      qbittorrent
+      ## qbittorrent
       qc
       # qMasterPassword
       # qownnotes
@@ -58,10 +58,13 @@ let
       qt6.qttools
       tail-tray # trayscale but qt
       uefitool
+      unar # test for ark
       waycheck
       wl-clipboard-rs
 
       # kwin-blur.packages.${custom.system}.default
+      # mypkgs.kde-shader-wallpaper
+      plasma-panel-colorizer
 
       # nixd # TODO: for kate
     ];
@@ -69,7 +72,6 @@ let
   #? Larger apps to be updated slower
   otherPackages = with pkgs; [
     #> Use same Electron version
-    equibop # Vencord fork
     # ayugram-desktop
     # losslesscut-bin
     # newpkgs.beeper
@@ -86,10 +88,27 @@ let
     tpm2-tools
     tpm2-totp
     uefisettings
-    # onlyoffice-desktopeditors
+    # onlyoffice-desktopeditors # TODO: move to programs.onlyoffice
+    # terminal-rain
 
     # mypkgs.libreoffice
-    mypkgs.helium
+    (callPackage (helium-flake + /helium.nix) {
+      libICE = libice;
+      libSM = libsm;
+      libX11 = libx11;
+      libXScrnSaver = libxscrnsaver;
+      libXcomposite = libxcomposite;
+      libXcursor = libxcursor;
+      libXdamage = libxdamage;
+      libXext = libxext;
+      libXfixes = libxfixes;
+      libXft = libxft;
+      libXi = libxi;
+      libXrandr = libxrandr;
+      libXrender = libxrender;
+      libXt = libxt;
+      libXtst = libxtst;
+    })
 
   ];
   newPackages = with newpkgs; [
@@ -97,15 +116,14 @@ let
 
     btrfs-heatmap
     compsize
+    cpu-x
+    uxplay
 
     pciutils
     usbtop
     usbutils
   ];
 
-  #!
-  #! TODO: RDP Server
-  #!
 in
 
 {
@@ -114,10 +132,14 @@ in
     desktopManager.plasma6.enable = true;
 
     udisks2.mountOnMedia = true;
+
+    # TODO: smartd the rest
+    smartd.notifications.test = true;
   };
 
   environment.sessionVariables = {
     KWIN_USE_OVERLAYS = 1;
+    # QT_QUICK_CONTROLS_STYLE = "org.kde.union"; # 🎉
   };
 
   security.rtkit.enable = true;
@@ -135,8 +157,11 @@ in
     with pkgs;
     with nerd-fonts;
     [
+      corefonts
       noto-fonts-color-emoji
+      noto-fonts-cjk-sans # -static
       # twemoji-color-font
+
       # code-new-roman
       # comic-shanns-mono
       # commit-mono
@@ -159,25 +184,15 @@ in
     ];
   };
 
-  environment.systemPackages =
-    qtPackages
-    ++ otherPackages
-    ++ newPackages
-    ++ (with kpkgs; [
-      # qtimageformats # provides optional image formats such as .webp and .avif
-      # kdegraphics-thumbnailers # pdf etc thumbnailer
-      aurorae
-      plasma-browser-integration
-      konsole
-      ark
-      gwenview
-      # okular
-      kate
-      ktexteditor # provides elevated actions for kate
-      dolphin
-      baloo-widgets # baloo information in Dolphin
-      dolphin-plugins
-      spectacle
-      krdp
-    ]);
+  environment.plasma6.excludePackages = with kpkgs; [
+    phonon-vlc
+    kdegraphics-thumbnailers
+    kwin-x11
+    elisa
+    okular
+    khelpcenter
+    ffmpegthumbs
+  ];
+
+  environment.systemPackages = qtPackages ++ otherPackages ++ newPackages;
 }

@@ -21,10 +21,14 @@ with pkgs;
 
     #? Aliases are displayed as-is
     shellAliases = {
-      l = "eza -lah@MF --color-scale --icons --hyperlink --group-directories-first --time-style relative";
+      l = "eza -laahg@MF --color-scale --icons --hyperlink --group-directories-first --time-style relative";
       pamtest = "${lib.getExe pamtester} login $USER authenticate";
+      trenew = "nix-tree --derivation /etc/nixos#nixosConfigurations.(hostname).config.system.build.toplevel";
 
-      nix = "command nix --verbose --print-build-logs"; # --log-format bar-with-logs";
+      # TODO: notgood
+      # sd = "sudo -E";
+      nroots = "nix-store --gc --print-roots | rg -v -e /proc -e nix-process";
+      nx = "command nix --verbose --print-build-logs"; # --log-format bar-with-logs";
       # nix run but with the already downloaded nixpkgs
       nrn = "nix run --override-input nixpkgs nixpkgs";
       # run any command with the ability to write to the nix store
@@ -47,7 +51,7 @@ with pkgs;
       dm = "sudo dmesg --ctime --show-delta --decode";
     };
 
-    interactiveShellInit = "source ${../assets/config.fish}";
+    interactiveShellInit = "source ${../assets/config.fish}; source ${../assets/alienate.fish}";
   };
 
   programs.starship = {
@@ -57,17 +61,24 @@ with pkgs;
     transientPrompt.enable = false;
   };
 
+  # Periodic locatedb update for plocate
+  services.locate.enable = true;
+
   environment.systemPackages = [
     atuin
-    fastfetchMinimal
+    fastfetch.minimal
     nushell
     tealdeer
+    # terminal-rain
     zoxide
 
     broot
     micro # nano
     ncdu
     superfile
+
+    fish-lsp
+    nixd # ! FIXME: test
 
     (mylib.mkFreshOnly (fortune.override { withOffensive = true; }))
   ];

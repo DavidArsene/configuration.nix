@@ -2,9 +2,6 @@
   config,
   # nix-gaming,
   pkgs,
-  mylib,
-  mypkgs,
-  newpkgs,
   ...
 }:
 let
@@ -24,6 +21,8 @@ in
 
       # TODO: wine for android
       # android-translation-layer
+      # FIXME: coolercontrol daemon
+      coolercontrol.coolercontrol-gui
 
       #> Dependencies
       # dxvk
@@ -40,6 +39,7 @@ in
       #   lowerBitnessSupport = false;
       # })
       mangohud
+      mangojuice
 
       # (q4wine.override { wine = wineCustom; })
 
@@ -47,7 +47,7 @@ in
       # nvtopPackages.nvidia
       pkgs.amdgpu_top
       vulkan-tools
-      (mylib.mkFreshOnly vulkan-tools-lunarg)
+      vulkan-tools-lunarg
     ])
 
     ++ (with pkgs; [
@@ -55,7 +55,6 @@ in
       #   glfw-wayland = mylib.marchNative pkgs mypkgs.minecraft.glfw-wayland;
       # })
 
-      (mylib.mkFreshOnly dotnet-runtime) # > for Terraria / tModLoader
       innoextract # > for Windows GOG installers
       #* for Linux installers use https://github.com/Yepoleb/gogextract
     ]);
@@ -63,14 +62,12 @@ in
   comment = ''
     reaper does: prctl(36, 1, 0, 0, 0) != -1
 
-    $STEAM/ubuntu12_32/reaper SteamLaunch AppId=348550 \
+    $STEAM/ubuntu12_32/reaper SteamLaunch AppId=###### \
     -- $STEAM/ubuntu12_32/steam-launch-wrapper \
     -- $STEAM/steamapps/common/SteamLinuxRuntime_sniper/_v2-entry-point --verb=waitforexitandrun \
-    -- $STEAM/compatibilitytools.d/GE-Proton8-27/proton waitforexitandrun \
+    -- $STEAM/compatibilitytools.d/*/proton waitforexitandrun \
     $STEAM/steamapps/common/Game/Game.exe
   '';
-
-  environment.sessionVariables = { };
 
   services = {
     lact.enable = false; # TODO:
@@ -80,11 +77,14 @@ in
     steam = {
       enable = true;
       package = pkgs.steam.override {
+
         extraEnv = {
           MANGOHUD = true;
         };
+
         extraArgs = "-dev";
       };
+
       extraCompatPackages = with pkgs; [ steam-play-none ];
 
       # extraEnv = {
@@ -103,22 +103,6 @@ in
 
       settings = { };
       # manually set for now
-    };
-
-    gamescope = {
-      enable = false;
-      args = [
-        "--rt"
-        "--prefer-vk-device 8086:9bc4"
-      ];
-      # capSysNice = true;
-      env = # > for Prime render offload on Nvidia laptops.
-        #> Also requires `hardware.nvidia.prime.offload.enable`.
-        {
-          __NV_PRIME_RENDER_OFFLOAD = "1";
-          __VK_LAYER_NV_optimus = "NVIDIA_only";
-          __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-        };
     };
   };
 }

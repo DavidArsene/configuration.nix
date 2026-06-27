@@ -1,0 +1,44 @@
+<network xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="file:///run/current-system/sw/share/libvirt/schemas/network.rng">
+	<!-- https://libvirt.org/formatnetwork.html -->
+
+	<name>main</name>
+	<uuid>87321335-45aa-471c-86b5-57d19cf31471</uuid>
+
+	<!-- TODO: route / open -->
+	<forward mode="nat">
+		<!-- <nat ipv6="yes" /> -->
+	</forward>
+
+	<bridge name="vmnet" macTableManager="libvirt" />
+
+	<!-- TODO: change prefix -->
+	<mac address="52:54:00:12:34:56" />
+
+	<!-- "register" uses systemd-resolved to forward .vm queries to guest -->
+	<domain name="vm" localOnly="yes" register="yes" />
+
+	<ip address="137.137.137.1" prefix="24">
+		<dhcp>
+			<!-- TODO: <host insted of mac? -->
+			<range start="137.137.137.1" end="137.137.137.254" />
+			<!-- <bootp file="http://boot.netboot.xyz/ipxe/netboot.xyz.lkrn" /> -->
+		</dhcp>
+		<!-- <tftp root="/var/lib/tftpboot" /> -->
+	</ip>
+
+	<!-- https://www.kraxel.org/blog/2021/09/vm-network-boot -->
+	<options xmlns="http://libvirt.org/schemas/network/dnsmasq/1.0">
+		<option value="dhcp-match=set:efi-x64-http,option:client-arch,16" />
+		<option value="dhcp-boot=tag:efi-x64-http,http://boot.netboot.xyz/ipxe/netboot.xyz.efi" />
+		<option value="dhcp-option-force=tag:efi-x64-http,60,HTTPClient" />
+	</options>
+
+	<!-- <ip family="ipv6" address="fda0:deaf:babe:1337::" prefix="64">
+		<dhcp>
+			<range start="fda0:deaf:babe:1337::100" end="fda0:deaf:babe:1337::1ff" />
+		</dhcp>
+	</ip> -->
+
+	<!-- <dns enable="no" /> -->
+</network>

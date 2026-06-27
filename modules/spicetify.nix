@@ -11,16 +11,16 @@ let
 
     # https://gerg-l.github.io/spicetify-nix/extensions.html
     enabledExtensions = with spicePkgs.extensions; [
-      autoSkipVideo
+      # autoSkipVideo
       popupLyrics
-      shuffle
+      # shuffle
       powerBar
       seekSong
       skipOrPlayLikedSongs
       playlistIcons
       fullAlbumDate
       listPlaylistsWithSong
-      wikify
+      # wikify
       featureShuffle
       songStats
       autoVolume
@@ -34,7 +34,7 @@ let
       sortPlay
       extendedCopy
       madeForYouShortcut
-      romajiConvert
+      # romajiConvert
       spicyLyrics
       ytVideo
     ];

@@ -2,7 +2,6 @@
   config,
   custom,
   mylib,
-  newpkgs,
   nix-custom,
   pkgs,
   self,
@@ -13,7 +12,6 @@
     settings = {
       accept-flake-config = false;
       auto-optimise-store = true;
-      build-dir = "/tmp/nixbld";
       builders-use-substitutes = true;
       flake-registry = ""; # "global" registry, not used by CLIs
       fallback = false;
@@ -39,8 +37,6 @@
         "pipe-operators"
       ];
       use-xdg-base-directories = true;
-
-      #lazy-trees = true;
     };
 
     channel.enable = false;
@@ -71,11 +67,13 @@
     distributedBuilds = true;
   };
 
+  # TODO: nixpkgs.config.handleEvalIssue can handle unfree/broken/etc errors check it aut
+
   environment.systemPackages = with pkgs; [
     nix-derivation
     # nix-fast-build
     # nix-forecast
-    # nix-inspect
+    ## TODO nix-inspect
     # nix-locate
     nix-output-monitor
     nix-tree
@@ -90,7 +88,13 @@
   programs = {
     nix-ld = {
       enable = true;
-      libraries = [ ];
+      libraries = with pkgs; [
+        # TODO: comprehensive
+        gtk3
+        libGL
+        libx11
+        qt6Packages.qtbase
+      ];
     };
     nix-index-database.comma.enable = true;
   };
@@ -116,14 +120,13 @@
 
   # TODO: Requires systemd in initrd, ruins my initrd-less boot plans
   system.etc.overlay.enable = true;
-  system.etc.overlay.mutable = false;
+  # system.etc.overlay.mutable = false; # FIXME:
   system.nixos-init.enable = true;
   # boot.initrd.systemd.enable = true;
   # boot.initrd.systemd.emergencyAccess = config.users.users.${custom.myself}.hashedPassword;
   # boot.initrd.clevis.enable = true;
   boot.initrd.checkJournalingFS = true;
   services.userborn.enable = true;
-  #  systemd.sysusers.enable = true;
 
   comment.nixpkgs.config = {
     #? Would replace the boring "-source" suffix

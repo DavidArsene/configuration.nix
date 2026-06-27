@@ -63,7 +63,6 @@ with lib;
         ]
       }";
 
-      # the best i could do in terms of ridiculous lib functions
       ExecStart = concatMapAttrsStringsSep "\n" (mnt: id: ''
 
         cryptsetup open --type bitlk /dev/disk/by-${idType}/${id} ${id} \

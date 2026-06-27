@@ -34,6 +34,13 @@ in
     tailscale = {
       enable = true;
       disableUpstreamLogging = true;
+
+      # Enable Linux IP forwarding.
+      # Used on phoenix for Tailscale's exit node.
+      # Used on legionix for various experiments.
+      # TODO: needed for bluetooth pan?
+      # TODO: conditional?
+      useRoutingFeatures = "server";
     };
   };
 

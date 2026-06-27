@@ -1,0 +1,273 @@
+<!--? https://libvirt.org/formatdomain.html -->
+<domain type="kvm"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="file:///run/current-system/sw/share/libvirt/schemas/domain.rng">
+
+	<!-- region Metadata -->
+	<title>Windows Server 2025 Gaming VM</title>
+	<name>win2k25</name>
+	<uuid>af1ce8cb-2ad6-4d5b-8c0d-87963fb7cac7</uuid>
+	<metadata>
+		<libosinfo xmlns="http://libosinfo.org/xmlns/libvirt/domain/1.0">
+			<os id="http://microsoft.com/win/2k25" />
+		</libosinfo>
+	</metadata>
+	<!-- TODO: <sysinfo type="fwcfg/smbios"></sysinfo> -->
+	<!-- endregion -->
+
+	<memory unit="GiB">12</memory>
+
+	<!-- region Optimized Pinned CPU -->
+	<cpu mode="host-passthrough" check="none" migratable="off">
+
+		<!--* Number of cores - 1; usually 2 threads on most systems -->
+		<topology sockets="1" dies="1" clusters="1" cores="7" threads="2" />
+		<cache mode="passthrough" />
+
+		<!--! https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#Improving_performance_on_AMD_CPUs -->
+		<feature name="topoext" policy="require" />
+
+		<!-- FIXME:::::::::::::::::::::::::::::::::::::::: -->
+		<!-- <feature policy="disable" name="svm" />
+				<feature policy="require" name="amd-stibp" />
+				<feature policy="disable" name="hypervisor" /> -->
+		<!-- <feature policy="require" name="invtsc" /> -->
+	</cpu>
+
+	<!--? Leave first core (threads 0 and 1) for the host -->
+	<vcpu cpuset="2-15" placement="static">14</vcpu>
+	<cputune>
+		<!--* vcpu = 0..(cnt-1); cpuset = vcpu + offset (2 here) -->
+		<!-- TODO: overkill? -->
+		<vcpupin vcpu="0" cpuset="2" />
+		<vcpupin vcpu="1" cpuset="3" />
+		<vcpupin vcpu="2" cpuset="4" />
+		<vcpupin vcpu="3" cpuset="5" />
+		<vcpupin vcpu="4" cpuset="6" />
+		<vcpupin vcpu="5" cpuset="7" />
+		<vcpupin vcpu="6" cpuset="8" />
+		<vcpupin vcpu="7" cpuset="9" />
+		<vcpupin vcpu="8" cpuset="10" />
+		<vcpupin vcpu="9" cpuset="11" />
+		<vcpupin vcpu="10" cpuset="12" />
+		<vcpupin vcpu="11" cpuset="13" />
+		<vcpupin vcpu="12" cpuset="14" />
+		<vcpupin vcpu="13" cpuset="15" />
+
+		<!--? Keep QEMU emulator thread(s) off guest cores -->
+		<emulatorpin cpuset="0-1" />
+	</cputune>
+	<!-- endregion -->
+
+	<devices>
+		<!-- region Disk -->
+		<!-- <disk type="block" device="disk">
+			<driver name="qemu" type="raw" cache="none" io="native" />
+			<source dev="/dev/nvme0n1p5" />
+			<target dev="sde" bus="usb" removable="on" />
+		</disk> -->
+
+		<disk type="file" device="disk">
+
+			<!-- cache: TODO: -->
+			<driver type="qcow2" cache="none" discard="unmap" detect_zeroes="unmap" io="native" />
+
+			<!--! NOTE: run `sudo chattr +C /var/lib/libvirt/images`
+			    ! if using btrfs _before_ creating the image! -->
+			<source file="/var/lib/libvirt/images/win2k25.qcow2" />
+
+			<!--? Use SCSI instead of VirtIO for the disk, because
+			    ? 1. The online autounattend.xml generator always loads vioscsi.inf
+			    ? 2. Performance is similar since Windows only knows SCSI
+			    ?    so viostore.inf has to convert to SCSI anyway -->
+			<!-- TODO: change efi var to sda -->
+			<target dev="sdd" bus="scsi" />
+		</disk>
+		<!--? required otherwise lsilogic will be used for disk -->
+		<controller model="virtio-scsi" type="scsi" />
+
+		<!--? VirtIO Drivers ISO -->
+		<disk type="file" device="cdrom">
+			<driver type="raw" />
+			<source startupPolicy="optional" file="/var/lib/libvirt/images/virtio-win-1.9.57.iso" />
+			<target dev="sdb" bus="scsi" />
+			<readonly />
+		</disk>
+		<!-- endregion -->
+
+		<!-- region Misc  -->
+		<sound model="ich9" />
+
+		<watchdog model="i6300esb" action="poweroff" />
+
+		<tpm model="tpm-crb">
+			<backend type="emulator" version="2.0" />
+		</tpm>
+
+		<channel type="unix">
+			<target name="org.qemu.guest_agent.0" type="virtio" />
+		</channel>
+
+		<!-- TODO: remove? -->
+		<memballoon model="none" />
+		<!-- endregion -->
+
+		<!-- region Network -->
+		<interface type="network">
+			<mac address="52:54:00:14:a8:f3" />
+			<source network="v4test" />
+			<model type="virtio-non-transitional" />
+			<driver name="vhost" queues="7" />
+		</interface>
+		<!-- endregion -->
+
+		<!-- region GPU Passthrough -->
+		<!--* NOTE: All devices from one IOMMU group must be passed together -->
+		<!--* https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#Ensuring_that_the_groups_are_valid -->
+
+		<!-- NVIDIA GeForce RTX 4060 Max-Q / Mobile (VGA) -->
+		<hostdev mode="subsystem" type="pci" managed="yes">
+			<source>
+				<!-- 0000:01:00.0 -->
+				<address domain="0000" bus="01" slot="00" function="0" />
+			</source>
+		</hostdev>
+
+		<!-- NVIDIA High Definition Audio Controller -->
+		<hostdev mode="subsystem" type="pci" managed="yes">
+			<source>
+				<!-- 0000:01:00.1 -->
+				<address domain="0000" bus="01" slot="00" function="1" />
+			</source>
+		</hostdev>
+		<!-- endregion -->
+
+		<!-- region Input Devices -->
+		<!--* NOTE: evdev takes complete control until released (except for grabToggle) -->
+		<!-- <input type="passthrough" bus="virtio">
+			<source evdev="/dev/input/by-path/platform-AMDI0010:00-event-mouse" />
+		</input> -->
+		 <input type="evdev">
+			<source dev="/dev/input/by-id/usb-ITE_Tech._Inc._ITE_Device_8258_-event-kbd"
+			        grabToggle="alt-alt"
+			        grab="all"
+			        repeat="on" />
+		</input>
+
+<!-- 		<input type="tablet" bus="usb" /> -->
+
+		<!--? Use VirtIO input instead of standard PS/2 ones -->
+		<!--* Not needed for evdev? -->
+		<input bus="virtio" type="mouse" />
+		<input bus="virtio" type="keyboard" />
+		<!-- endregion -->
+
+		<!-- region Declarative USB Device Redirection -->
+		<hostdev mode="subsystem" type="usb" managed="yes">
+			<source startupPolicy="optional">
+				<vendor id="0x1ea7" />
+				<product id="0x0066" />
+			</source>
+		</hostdev>
+		<!-- endregion -->
+
+		<!-- region Basic graphics for troubleshooting, directly in virt-manager -->
+		<!--* `winget install -i Spice.VDAgent` -->
+		<!-- <graphics type="spice" port="-1" autoport="no">
+			<listen type="address" />
+		</graphics>
+		<video>
+			<model type="virtio" />
+		</video>
+		<channel type="spicevmc">
+			<target name="com.redhat.spice.0" type="virtio" />
+		</channel> -->
+		<!-- endregion -->
+
+	</devices>
+
+	<!--? Looking Glass QEMU arguments (not mapped to XML by libvirt) -->
+	<commandline xmlns="http://libvirt.org/schemas/domain/qemu/1.0">
+		<arg value="-device" />
+		<arg value='{"driver":"ivshmem-plain","id":"shmem0","memdev":"lgshm"}' />
+		<arg value="-object" />
+		<!-- 256 * 1024 * 1024 = 268435456 -->
+		<arg value='{"qom-type":"memory-backend-file","id":"lgshm","mem-path":"/dev/kvmfr0","size":268435456,"share":true}' />
+	</commandline>
+
+	<!-- <capabilities xmlns="http://libvirt.org/schemas/domain/qemu/1.0">
+		<add></add>
+	</capabilities> -->
+
+	<!-- region Misc -->
+	<os firmware="efi">
+		<!--* https://wiki.qemu.org/Features/Q35 -->
+		<!--! NOTE: Pay attention to any changes QEMU may do during updates -->
+		<type arch="x86_64" machine="pc-q35-11.0">hvm</type>
+
+		<!-- Used to choose a <loader> -->
+		<!-- https://libvirt.org/formatdomaincaps.html#guest-firmware -->
+		<firmware>
+			<feature name="secure-boot" enabled="yes" />
+		</firmware>
+
+		<!-- TODO: auto-regeneratable -->
+		<nvram template="/run/libvirt/nix-ovmf/edk2-i386-vars.fd">/var/lib/libvirt/qemu/nvram/win2k25_VARS.fd</nvram>
+
+		<!--? Masquerade as host for less detection -->
+		<smbios mode="host" />
+	</os>
+
+	<!-- https://libvirt.org/formatdomaincaps.html#features -->
+	<?run $ virsh domcapabilities --machine q35 ?>
+	<features>
+		<acpi />
+		<apic />
+
+		<!--? Enable all Hyper-V enlightenments -->
+		<hyperv mode="passthrough" />
+
+		<pvspinlock state="on" />
+		<kvm>
+			<!--! NOTE: Causes Code 43 -->
+			<!-- <hidden state="on" /> -->
+			<hint-dedicated state="on" />
+		</kvm>
+
+		<!-- <ioapic driver="kvm" /> -->
+
+		<!-- Performance monitoring unit -->
+		<!-- <pmu state="off" /> -->
+
+		<!-- Fork cleanup process to allow QEMU to exit immediately -->
+		<!-- <async-teardown enabled="yes" /> -->
+
+		<!-- Disable creating default PS/2 devices (and vmport) -->
+		<ps2 state="off" />
+	</features>
+
+	<memoryBacking>
+		<hugepages>
+			<page size="2" unit="MiB" />
+		</hugepages>
+		<access mode="shared" />
+		<discard />
+		<allocation mode="ondemand" />
+	</memoryBacking>
+
+	<!-- TODO: optimize -->
+	<clock offset="localtime">
+		<timer name="rtc" tickpolicy="catchup" />
+		<timer name="pit" tickpolicy="delay" />
+		<timer name="hpet" present="no" />
+		<!-- FIXME:: effects? -->
+		<timer name="tsc" mode="native" present="yes" />
+		<timer name="hypervclock" present="yes" />
+	</clock>
+
+	<pm>
+		<suspend-to-mem enabled="no" />
+		<suspend-to-disk enabled="no" />
+	</pm>
+	<!-- endregion -->
+</domain>

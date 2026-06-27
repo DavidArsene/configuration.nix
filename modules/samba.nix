@@ -1,13 +1,14 @@
 { custom, pkgs, ... }:
 {
   services.samba = {
-    enable = true;
-    package = pkgs.samba.override {
-      enableLDAP = true;
-      # enableMDNS = true;
-      enableDomainController = true;
-      enableRegedit = true;
-    };
+    enable = false;
+    #    package = pkgs.samba.override {
+    #      enableLDAP = true;
+    #      # enableMDNS = true;
+    #      enableDomainController = true;
+    #      enableRegedit = true;
+    #    };
+    package = pkgs.sambaFull;
     smbd.extraArgs = [ ];
 
     nmbd.enable = false;
@@ -51,7 +52,7 @@
       "short preserve case" = "yes";
 
       # Performance
-      "cache directory" = "/tmp/samba/cache";
+      "cache directory" = "/tmp/samba_cache";
 
       "client ldap sasl wrapping" = "plain";
       "client protection" = "plain";
