@@ -1,6 +1,5 @@
 {
   config,
-  custom,
   mylib,
   nix-custom,
   pkgs,
@@ -43,7 +42,7 @@
 
     # package = pkgs.lix;
     # package = pkgs.nixVersions.latest;
-    package = mylib.marchNative pkgs nix-custom.packages.${custom.system}.default;
+    package = mylib.marchNative pkgs nix-custom.packages.${pkgs.stdenv.system}.default;
     # Modernizing ends here.
 
     buildMachines = [
@@ -57,7 +56,7 @@
         ];
         maxJobs = 1;
         speedFactor = 2;
-        sshUser = custom.myself;
+        sshUser = config.users.myself;
         supportedFeatures = [
           "benchmark"
           "big-parallel"
@@ -82,7 +81,6 @@
     manix
     statix
     # lon
-    # nix-alien.package.${custom.system}
   ];
 
   programs = {
@@ -102,7 +100,7 @@
   environment.etc = {
     #? Make /etc/nixos point to the local copy of the config,
     #? such that all nix commands find it without --flake.
-    "nixos".source = "/home/${custom.myself}/.nix/configuration.nix/";
+    "nixos".source = "/home/${config.users.myself}/.nix/configuration.nix/";
 
     #? Similarly, a link to the version of
     #? the config used to build this system.
@@ -116,14 +114,13 @@
   # };
 
   environment.localBinInPath = true;
-  environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
   # TODO: Requires systemd in initrd, ruins my initrd-less boot plans
   system.etc.overlay.enable = true;
   # system.etc.overlay.mutable = false; # FIXME:
   system.nixos-init.enable = true;
   # boot.initrd.systemd.enable = true;
-  # boot.initrd.systemd.emergencyAccess = config.users.users.${custom.myself}.hashedPassword;
+  # boot.initrd.systemd.emergencyAccess = config.users.users.${config.users.myself}.hashedPassword;
   # boot.initrd.clevis.enable = true;
   boot.initrd.checkJournalingFS = true;
   services.userborn.enable = true;

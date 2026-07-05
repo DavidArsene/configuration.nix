@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ self, pkgs, ... }:
 let
   kernel = pkgs.linux_latest;
 in
@@ -24,6 +24,7 @@ pkgs.mkShell {
 
     checkpoint() {
       echo "Checkpoint: $1"
+      echo
 
       make savedefconfig
       cp defconfig defconfig.$1
@@ -31,6 +32,7 @@ pkgs.mkShell {
       [ -f defconfig.old ] && scripts/diffconfig defconfig.old defconfig | tee change.$1.txt
 
       mv defconfig defconfig.old
+      echo
     }
 
     mkdir -p /tmp/xconfig
@@ -48,11 +50,16 @@ pkgs.mkShell {
       checkpoint "orig"
     fi
 
-    LSMOD=/david/lsmod.txt make localmodconfig
+    cat ${self + /hosts/legionix/modprobed-db.txt} | rg -v -e '#' -e '^$' | uniq > lsmod.txt
+
+    LSMOD=lsmod.txt make localmodconfig
     checkpoint "lsmod"
 
-    make xconfig
-    checkpoint "xconfig"
+    for (( i = 1; ; i++ )); do
+      make xconfig
+      checkpoint "xconfig_$i"
+      read -p "Continue?"
+    done
 
     exit
   '';

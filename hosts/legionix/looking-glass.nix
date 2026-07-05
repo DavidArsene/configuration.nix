@@ -1,6 +1,5 @@
 {
   config,
-  custom,
   lib,
   pkgs,
   ...
@@ -222,7 +221,7 @@ in
   services.udev.extraRules = ''
     SUBSYSTEM=="kvmfr", GROUP="kvm", MODE="0660"
   '';
-  users.users.${custom.myself}.extraGroups = [ "kvm" ];
+  users.users.${config.users.myself}.extraGroups = [ "kvm" ];
 
   # https://github.com/NixOS/nixpkgs/pull/318204 TODO: watch for merges / hm module
   environment.etc."looking-glass-client.ini".text =
@@ -236,9 +235,9 @@ in
   #! 3. kernel tweaking
   boot = {
     kernelParams = [
-      "amd_iommu=on"
+      "amd_iommu=on" # TODO: IOMMUFD?
       "amd_iommu_dump=1"
-      "iommu=pt"
+      "iommu.passthrough=1" # newer "iommu=pt"
       # FIXME: ?
       "transparent_hugepage=madvise"
     ];

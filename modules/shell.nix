@@ -22,17 +22,17 @@ with pkgs;
     #? Aliases are displayed as-is
     shellAliases = {
       l = "eza -laahg@MF --color-scale --icons --hyperlink --group-directories-first --time-style relative";
-      pamtest = "${lib.getExe pamtester} login $USER authenticate";
       trenew = "nix-tree --derivation /etc/nixos#nixosConfigurations.(hostname).config.system.build.toplevel";
 
-      # TODO: notgood
-      # sd = "sudo -E";
+      # TODO: notgood?
+      sd = "sudo -E";
+
       nroots = "nix-store --gc --print-roots | rg -v -e /proc -e nix-process";
-      nx = "command nix --verbose --print-build-logs"; # --log-format bar-with-logs";
+      nx = "nix --verbose --print-build-logs"; # --log-format bar-with-logs";
       # nix run but with the already downloaded nixpkgs
-      nrn = "nix run --override-input nixpkgs nixpkgs";
+      nrn = "nx run --override-input nixpkgs nixpkgs";
       # run any command with the ability to write to the nix store
-      rw-store = "sudo nsenter --env --mount --target (pgrep --oldest nix-daemon)";
+      rw-store = "sd nsenter --env --mount --target (pgrep --oldest nix-daemon)";
     };
 
     #? Abbreviations are expanded when typed
@@ -47,7 +47,7 @@ with pkgs;
       ydep = "nix why-depends --all --precise";
       oldcfg = "nrb repl --flake /etc/source";
       # Add custom expression to profile (not just flake#output)
-      "nprof --set-cursor" = "nix profile add --impure --expr 'with import <nixpkgs> { }; %'";
+      nprof = "nx profile add --impure --expr 'with import <nixpkgs> { }; ";
       dm = "sudo dmesg --ctime --show-delta --decode";
     };
 
@@ -66,7 +66,7 @@ with pkgs;
 
   environment.systemPackages = [
     atuin
-    fastfetch.minimal
+    fastfetch-unwrapped
     nushell
     tealdeer
     # terminal-rain
@@ -79,6 +79,8 @@ with pkgs;
 
     fish-lsp
     nixd # ! FIXME: test
+
+    fetch # lol 3d spinning logo
 
     (mylib.mkFreshOnly (fortune.override { withOffensive = true; }))
   ];

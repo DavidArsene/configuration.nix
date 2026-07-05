@@ -1,4 +1,4 @@
-{ pkgs, custom, ... }:
+{ config, pkgs, ... }:
 {
   imports = [
     ./hardware.nix
@@ -14,7 +14,7 @@
     editor = false; # TODO: better default worthy?
 
     edk2-uefi-shell.enable = true;
-    netbootxyz.enable = false;
+    netbootxyz.enable = true;
 
     windows."11" = {
       title = "Windows 11";
@@ -25,7 +25,7 @@
 
   services.duplicati = {
     # enable = true; FIXME: good but large
-    user = custom.myself;
+    user = config.users.myself;
     parameters = "";
   };
 
@@ -39,4 +39,5 @@
 
   # HARRY DID YOU READ THE COMMENT?
   system.stateVersion = "26.05";
+  # https://nixos.org/manual/nixpkgs/unstable/release-notes#sec-nixpkgs-release-26.11-lib-breaking
 }

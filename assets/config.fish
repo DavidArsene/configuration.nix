@@ -10,7 +10,10 @@ set -x SYSTEMD_PAGER cat
 function fish_greeting
     fastfetch
     echo
-    fortune
+
+    # manually installed
+    command -q fortune
+    and fortune
 
     # wildcard always acts like failglob, unless in a for, set etc.
     for motd in /run/motd.d/*

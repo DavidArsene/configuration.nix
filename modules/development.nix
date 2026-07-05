@@ -28,7 +28,7 @@ let
 
     extraProperties =
       let
-        baseDir = /david/IntelliJIdea;
+        baseDir = "/david/IntelliJIdea";
       in
       {
         "idea.is.internal" = "true";
@@ -40,7 +40,7 @@ let
         "idea.system.path" = "${baseDir}/system";
         "idea.config.path" = "${baseDir}/config";
         "idea.plugins.path" = "${baseDir}/plugins";
-        "idea.log.path" = /tmp/IntelliJIdeaLogs; # "${baseDir}/logs";
+        "idea.log.path" = "/tmp/IntelliJIdeaLogs"; # "${baseDir}/logs";
 
         "machine.id.disabled" = "true"; # Used by update checker
       };
@@ -65,7 +65,7 @@ in
 
     # frescobaldi
 
-    #? Python with some commonly used (by me) dependencies
+    #? Python with some commonly? used (by me) dependencies
     #! Does not work with python3Minimal
     (python3.withPackages (
       pypkgs: with pypkgs; [
@@ -95,6 +95,7 @@ in
     binwalk
     # edl
     # mypkgs.samba-manager
+    # gg-jj
 
     nix-init
 
@@ -104,8 +105,7 @@ in
       }))
     */
 
-    # idea
-    # mypkgs.idplugmanager-ro-cei
+    idea
     # mypkgs.ida-pro
   ];
 

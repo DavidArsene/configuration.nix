@@ -9,6 +9,8 @@
     libirecovery
     libideviceactivation
 
+    # WAITPR iloader
+
     # ifuse
     # idescriptor
   ];

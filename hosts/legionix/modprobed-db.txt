@@ -465,3 +465,7 @@ usblp
 
 # Finally!
 ntfs
+nls_utf8
+
+# test, dep for all others
+snd_hda_acpi

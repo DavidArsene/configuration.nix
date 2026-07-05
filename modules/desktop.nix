@@ -35,6 +35,10 @@ let
       krfb
       kweather
 
+      oxygen
+      oxygen-icons
+      oxygen-sounds
+
       #* Obscure KDE
       ksystemlog
       kdebugsettings
@@ -62,7 +66,7 @@ let
       waycheck
       wl-clipboard-rs
 
-      # kwin-blur.packages.${custom.system}.default
+      # kwin-blur.packages.${config.users.system}.default
       # mypkgs.kde-shader-wallpaper
       plasma-panel-colorizer
 
@@ -88,10 +92,10 @@ let
     tpm2-tools
     tpm2-totp
     uefisettings
-    # onlyoffice-desktopeditors # TODO: move to programs.onlyoffice
-    # terminal-rain
+    # WAITPR onlyoffice-desktopeditors # TODO: move to programs.onlyoffice
 
     # mypkgs.libreoffice
+    # collabora-desktop
     (callPackage (helium-flake + /helium.nix) {
       libICE = libice;
       libSM = libsm;
@@ -140,6 +144,7 @@ in
   environment.sessionVariables = {
     KWIN_USE_OVERLAYS = 1;
     # QT_QUICK_CONTROLS_STYLE = "org.kde.union"; # 🎉
+    NIXOS_OZONE_WL = 1;
   };
 
   security.rtkit.enable = true;
@@ -192,6 +197,8 @@ in
     okular
     khelpcenter
     ffmpegthumbs
+
+    plasma-workspace-wallpapers
   ];
 
   environment.systemPackages = qtPackages ++ otherPackages ++ newPackages;

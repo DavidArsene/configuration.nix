@@ -1,5 +1,5 @@
 {
-  custom,
+  config,
   lib,
   pkgs,
   ...
@@ -57,7 +57,7 @@
     LC_MESSAGES = "en_US.UTF-8";
   };
 
-  users.users.${custom.myself} = {
+  users.users.${config.users.myself} = {
     isNormalUser = true;
     description = "David";
     # `input` required by GD CBF

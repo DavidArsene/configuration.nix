@@ -29,8 +29,8 @@
 
 		<!-- FIXME:::::::::::::::::::::::::::::::::::::::: -->
 		<!-- <feature policy="disable" name="svm" />
-				<feature policy="require" name="amd-stibp" />
-				<feature policy="disable" name="hypervisor" /> -->
+		<feature policy="require" name="amd-stibp" />
+		<feature policy="disable" name="hypervisor" /> -->
 		<!-- <feature policy="require" name="invtsc" /> -->
 	</cpu>
 
@@ -144,17 +144,17 @@
 
 		<!-- region Input Devices -->
 		<!--* NOTE: evdev takes complete control until released (except for grabToggle) -->
-		<!-- <input type="passthrough" bus="virtio">
+		<input type="passthrough" bus="virtio">
 			<source evdev="/dev/input/by-path/platform-AMDI0010:00-event-mouse" />
-		</input> -->
-		 <input type="evdev">
+		</input>
+		<input type="evdev">
 			<source dev="/dev/input/by-id/usb-ITE_Tech._Inc._ITE_Device_8258_-event-kbd"
 			        grabToggle="alt-alt"
 			        grab="all"
 			        repeat="on" />
 		</input>
 
-<!-- 		<input type="tablet" bus="usb" /> -->
+		<!-- <input type="tablet" bus="usb" /> -->
 
 		<!--? Use VirtIO input instead of standard PS/2 ones -->
 		<!--* Not needed for evdev? -->
@@ -234,26 +234,26 @@
 			<hint-dedicated state="on" />
 		</kvm>
 
-		<!-- <ioapic driver="kvm" /> -->
+		<ioapic driver="kvm" />
 
 		<!-- Performance monitoring unit -->
-		<!-- <pmu state="off" /> -->
+		<pmu state="off" />
 
 		<!-- Fork cleanup process to allow QEMU to exit immediately -->
-		<!-- <async-teardown enabled="yes" /> -->
+		<async-teardown enabled="yes" />
 
 		<!-- Disable creating default PS/2 devices (and vmport) -->
 		<ps2 state="off" />
 	</features>
 
-	<memoryBacking>
+	<!-- <memoryBacking>
 		<hugepages>
 			<page size="2" unit="MiB" />
 		</hugepages>
 		<access mode="shared" />
 		<discard />
 		<allocation mode="ondemand" />
-	</memoryBacking>
+	</memoryBacking> -->
 
 	<!-- TODO: optimize -->
 	<clock offset="localtime">

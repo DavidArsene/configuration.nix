@@ -1,11 +1,10 @@
 {
-  custom,
-  spicetify,
   pkgs,
+  spicetify,
   ...
 }:
 let
-  spicePkgs = spicetify.legacyPackages.${custom.system};
+  spicePkgs = spicetify.legacyPackages.${pkgs.stdenv.system};
 
   spicedSpotify = spicetify.lib.mkSpicetify pkgs {
 

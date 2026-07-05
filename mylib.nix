@@ -1,12 +1,12 @@
 inputs:
-let
-  lib = inputs.nixpkgs.lib;
+with inputs.nixpkgs.lib;
 
+let
   this = rec {
     #? Used to install all packages, including ones
     #? that are normally skipped on upgrades due
     #? to being frequently rebuilt without changes.
-    mkFreshOnly = pkg: lib.mkIf (isEnvTrue "FRESH_INSTALL") pkg;
+    mkFreshOnly = pkg: mkIf (isEnvTrue "FRESH_INSTALL") pkg;
 
     marchNative =
       pkgs:
@@ -34,7 +34,6 @@ let
 
     myModules =
       (
-        with lib;
         builtins.readDir ./modules
         |> filterAttrs (name: _: hasSuffix ".nix" name)
         |> mapAttrs' (name: _: nameValuePair (removeSuffix ".nix" name) ./modules/${name})
@@ -48,7 +47,7 @@ let
       {
         system ? "x86_64-linux",
         specialArgs ? { },
-        modules ? [ ],
+        commonModules ? [ ],
       }:
 
       {
@@ -57,7 +56,7 @@ let
       }:
 
       #! Use the the custom nixosSystem from minimal.nix
-      lib.nixosSystem {
+      nixosSystem {
         inherit system;
         specialArgs = inputs // specialArgs // { mylib = this; };
 
@@ -66,31 +65,41 @@ let
 
         # TODO: docs
         modules =
-          modules
+          commonModules
           ++ hostModules
           ++ [
             ./hosts/${hostName}
             {
-              config.networking.hostName = hostName;
-              # config.nix.registry = lib.mapAttrs (k: v: {
-              #   to = { type = "path"; path = v; };
-              # }) inputs;
-              options.comment = lib.mkOption { type = lib.types.anything; };
+              config = {
+                networking.hostName = hostName;
+
+                #? Use mkDefault since nixpkgs-flake.nix already creates registry
+                #? entry for nixpkgs and ours would be the wrapper anyway.
+                nix.registry = mapAttrs (k: v: mkDefault { flake = v; }) inputs;
+              };
+
+              options = {
+                # NOTE: change this if you're not me
+                users.myself = mkOption {
+                  type = types.str;
+                  default = "david";
+                };
+                comment = mkOption { type = types.anything; };
+              };
             }
           ];
-      }
-      |> builtins.trace "Building NixOS system for ${hostName}...";
+      };
 
     isEnvTrue =
       var:
-      (builtins.getEnv var |> lib.elem) [
+      (builtins.getEnv var |> elem) [
         "1"
         "true"
         "yes"
       ];
 
     meld =
-      inputs: builtins.foldl' (output: subflake: lib.recursiveUpdate output (import subflake inputs)) { };
+      inputs: builtins.foldl' (output: subflake: recursiveUpdate output (import subflake inputs)) { };
 
   };
 in

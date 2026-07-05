@@ -1,13 +1,12 @@
 {
-  config,
   # nix-gaming,
+  mypkgs,
   pkgs,
   ...
 }:
-let
-  # pkgs = newpkgs; # LSP
-  steam-ran = if config.programs.steam.enable then pkgs.steam-run else pkgs.steam-run-free;
-in
+# let
+# pkgs = newpkgs; # LSP
+# in
 {
   # TODO: home-manager
   # programs.mangohud.enable = true;
@@ -16,7 +15,6 @@ in
     (with pkgs; [
       # (mylib.marchNative pkgs mypkgs.wine)
       # winetricks
-      steam-ran
       # wine-wayland
 
       # TODO: wine for android
@@ -27,6 +25,7 @@ in
       #> Dependencies
       # dxvk
       # vkd3d-proton
+
       lsfg-vk
       lsfg-vk-ui
 
@@ -44,7 +43,7 @@ in
       # (q4wine.override { wine = wineCustom; })
 
       # TODO: no cuda?
-      # nvtopPackages.nvidia
+      nvtopPackages.nvidia
       pkgs.amdgpu_top
       vulkan-tools
       vulkan-tools-lunarg
@@ -76,22 +75,18 @@ in
   programs = {
     steam = {
       enable = true;
-      package = pkgs.steam.override {
+      package = mypkgs.custeam.override {
 
         extraEnv = {
           MANGOHUD = true;
+          # OBS_VKCAPTURE = true;
+          # RADV_TEX_ANISO = 16;
         };
 
         extraArgs = "-dev";
       };
 
       extraCompatPackages = with pkgs; [ steam-play-none ];
-
-      # extraEnv = {
-      #   MANGOHUD = true;
-      #   OBS_VKCAPTURE = true;
-      #   RADV_TEX_ANISO = 16;
-      # };
 
       # nix-gaming platformOptimizations
       #      platformOptimizations.enable = true;

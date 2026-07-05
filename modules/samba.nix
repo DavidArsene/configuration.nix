@@ -1,4 +1,4 @@
-{ custom, pkgs, ... }:
+{ config, pkgs, ... }:
 {
   services.samba = {
     enable = false;
@@ -23,7 +23,7 @@
       "comment" = "Welcome to the Dark Side";
       "deadtime" = "15";
       "dns hostname" = "netbios.realm.changeme";
-      "force user" = custom.myself; # ?
+      "force user" = config.users.myself; # ?
       "guest ok" = "yes"; # ?
       "logging" = "systemd";
       "log writeable files on exit" = "yes";

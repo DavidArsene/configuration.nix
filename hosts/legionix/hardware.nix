@@ -23,15 +23,11 @@ in
     # TODO: include "nvme" directly in custom kernels
     # TODO: so that initrd can be completely removed.
     initrd.availableKernelModules = [ "nvme" ];
-    # ++ [ "ata_piix" "sr_mod" ]; # VBox
-    # ++ [ "sdhci_acpi" "xhci_pci" ]; # Misc
-    # ++ [ "hid_generic" "hid_lenovo" ]; # LUKS in initrd
 
     kernelModules = [ "ntsync" ];
 
     blacklistedKernelModules = [
       "sp5100_tco" # watchdog
-      # "k10temp" # replaced by zenpower
       "ntfs3" # use NTFSPLUS
     ];
 
@@ -40,7 +36,7 @@ in
     extraModulePackages = with kernel; [
       cpupower
       lenovo-legion-module
-      zenpower
+      zenergy
     ];
 
     kernelParams = [
@@ -64,6 +60,11 @@ in
       # FIXME: keep?
       "audit=off"
       "bgrt_disable"
+
+      # TODO: perf?
+      # "pci=pci_bus_safe"
+      "pnp.debug" # CONFIG_PNP_DEBUG_MESSAGES
+      # TODO: thermal gov bang bang
     ];
 
     loader.efi.canTouchEfiVariables = true;
@@ -132,6 +133,7 @@ in
       # ! nvidia-smi wakes gpu and doesn't reflect real state
 
       open = true;
+      package = kernel.nvidiaPackages.bleeding_edge;
 
       prime = {
         offload = {
@@ -210,7 +212,7 @@ in
           ${lib.getExe' pkgs.util-linux "rename"} -v 17aa38b4 17aa38b7 cirrus/*
         '';
 
-        hash = "sha256-oIMkYHXQX54MI15CX3WShyP/v7/CzV3o9ssp/7AXIlc=";
+        hash = "sha256-s24OU/K1NBZ+neUF9DN9vJRIV7csB7q+a9VZlv/GNaQ=";
         tag = pkgs.microcode-amd.version;
       })
     ];
@@ -220,7 +222,6 @@ in
     # Force kwin to use iGPU (64 as seen in hardware.nvidia.prime)
     # Otherwise depends on device initialization order.
     KWIN_DRM_DEVICES = "/dev/dri/by-path/pci-0000\\\\:64\\\\:00.0-card";
-    # FIXME: this or amdgpu.initrd
   };
 
   powerManagement.enable = true;
@@ -255,8 +256,10 @@ in
       extraRemotes = [ "lvfs-testing" ];
     };
 
+    fprintd = {
+      enable = true;
+      package = pkgs.fprintd.override { libfprint = mypkgs.libfprint-fpc; };
+    };
+    udev.packages = [ mypkgs.libfprint-fpc ];
   };
-  # FIXME IMMEDIATE
-  systemd.services."fwupd-refresh".enable = false;
-  systemd.timers."fwupd-refresh".enable = false;
 }
