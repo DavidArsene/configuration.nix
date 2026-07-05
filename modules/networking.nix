@@ -1,7 +1,7 @@
-{ config, ... }:
+    { config, ... }:
 let
   #? Defaults to checking display managers.
-  isDesktop = config.services.displayManager.enable;
+  isDesktop = true; # config.services.displayManager.enable;
 
   #? Disabled by minimal.nix
   hasFirewall = config.networking.firewall.enable;

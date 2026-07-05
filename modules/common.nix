@@ -59,7 +59,7 @@
 
   users.users.${custom.myself} = {
     isNormalUser = true;
-    description = "David";
+    description = "Matei";
     # `input` required by GD CBF
     extraGroups = [
       "wheel"
@@ -67,7 +67,7 @@
       "video" # FIXME test
       # "wireshark"
     ];
-    hashedPassword = "$y$j9T$qziosG8H1ZEuu7FMixgtk0$4aTF5xoTyg1MzcH2yUcb1/L21w3IigoYdId.vEdLnA9";
+    hashedPassword = "$y$j9T$9QNaevgCvYJomcvnXrwR7.$dhNjxeS7dO.vGdg0vcWl4Z32TyBDBW2TrObjt/WidI6";
   };
   users.mutableUsers = false;
 

@@ -42,8 +42,8 @@
     channel.enable = false;
 
     # package = pkgs.lix;
-    # package = pkgs.nixVersions.latest;
-    package = mylib.marchNative pkgs nix-custom.packages.${custom.system}.default;
+    package = pkgs.nixVersions.latest;
+    # package = mylib.marchNative pkgs nix-custom.packages.${custom.system}.default;
     # Modernizing ends here.
 
     buildMachines = [

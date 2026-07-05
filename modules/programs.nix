@@ -86,8 +86,8 @@ in
     git = {
       enable = true;
       config = {
-        user.name = "DavidArsene";
-        user.email = "80218600+DavidArsene@users.noreply.github.com";
+        user.name = "not-patches";
+        user.email = "mateiosul14@gmail.com";
 
         # core.pager = "delta";
         diff = {
