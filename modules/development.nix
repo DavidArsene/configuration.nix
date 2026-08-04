@@ -12,18 +12,14 @@ let
 
     extraPackages = with newpkgs; [
       fish-lsp
+      just-lsp
 
       gnumake
       meson
+      pkg-config
 
-      pkgs.nixd
-      pkgs.nixfmt
-
-      # ruff
-      # ty
-      # basedpyright
-      # pyrefly
-      # zuban
+      nixd
+      nixfmt
     ];
 
     extraProperties =
@@ -63,6 +59,14 @@ in
     # step-cli
     # global-platform-pro
 
+    (tesseract.override {
+      enableLanguages = [
+        "eng"
+        "ron"
+        "grc"
+      ];
+    })
+
     # frescobaldi
 
     #? Python with some commonly? used (by me) dependencies
@@ -99,13 +103,7 @@ in
 
     nix-init
 
-    /*
-      (openclaw.overrideAttrs (prev: {
-        meta = lib.removeAttrs prev.meta [ "knownVulnerabilities" ];
-      }))
-    */
-
-    idea
+    # idea
     # mypkgs.ida-pro
   ];
 

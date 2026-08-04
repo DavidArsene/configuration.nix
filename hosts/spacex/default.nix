@@ -2,6 +2,8 @@
   config,
   pkgs,
   lib,
+  mylib,
+  helium,
   ...
 }:
 
@@ -9,68 +11,30 @@ let
   kernel = pkgs.linuxPackages_latest;
 in
 {
-  imports = [ ./hardware.nix ];
+  imports = with mylib.myModules; [
+    gaming
+    laptop
+    matei
+
+    ./hardware.nix
+  ];
 
   boot = {
-    kernelModules = [ "ntsync" ];
-
-    blacklistedKernelModules = [
-      "sp5100_tco" # watchdog
-      "ntfs3" # use NTFSPLUS
-    ];
-
     kernelPackages = kernel;
 
-    extraModulePackages = with kernel; [
-      cpupower
-    ];
-
-    loader.systemd-boot.enable = true;
-    loader.efi.canTouchEfiVariables = true;
+    extraModulePackages = with kernel; [ cpupower ];
   };
-
-  # TODO: Steam still requires 32bit
-  nixos.minify.no32BitGraphics = lib.mkForce false;
-
-  powerManagement.enable = true;
 
   environment.systemPackages = with pkgs; [
     discord
     jetbrains.idea
-    (callPackage (helium-flake + /helium.nix) {
-      libICE = libice;
-      libSM = libsm;
-      libX11 = libx11;
-      libXScrnSaver = libxscrnsaver;
-      libXcomposite = libxcomposite;
-      libXcursor = libxcursor;
-      libXdamage = libxdamage;
-      libXext = libxext;
-      libXfixes = libxfixes;
-      libXft = libxft;
-      libXi = libxi;
-      libXrandr = libxrandr;
-      libXrender = libxrender;
-      libXt = libxt;
-      libXtst = libxtst;
-    })
+    helium.packages.helium
 
   ];
 
   services = {
     flatpak.enable = true;
     blueman.enable = true;
-
-    xserver.videoDrivers = [ "nvidia" ];
-
-    power-profiles-daemon.enable = true;
-
-    fstrim.enable = true;
-
-    fwupd = {
-      enable = true;
-      extraRemotes = [ "lvfs-testing" ];
-    };
   };
 
   # undo's

@@ -9,7 +9,7 @@ let
   # Preserve LSP features
   # pkgs = newpkgs;
 
-  theGlobalJava = pkgs.jetbrains.jdk; # -no-jcef;
+  theGlobalJava = pkgs.jetbrains.jdk-no-jcef;
 in
 {
   environment.systemPackages = with newpkgs; [
@@ -30,7 +30,7 @@ in
     sd # ? sed
     seccure
     # sequoia-chameleon-gnupg # ? exact gpg replacement
-    sequoia-sq # ? gpg reimplementation
+    # sequoia-sq # ? gpg reimplementation
     # sequoia-sop # ? stateless opengpg
     # sequoia-wot # ? web of trust something
     xh # ? wget
@@ -46,6 +46,7 @@ in
     gh
     # imagemagick
     isd
+    just
     lshw
     lsof
     mandoc # ? re-add if minimized
@@ -75,13 +76,15 @@ in
     sbsigntool
   ];
 
+  # FIXME: replace when .home is fixed
+  environment.variables.JAVA_HOME = "${theGlobalJava}/lib/openjdk";
+
   programs = {
     java = {
       enable = false; # sets variable by shell init, currently babelfish broken
       binfmt = true; # no alternative for this, but meh
       package = lib.mkDefault theGlobalJava;
     };
-    # environment.variables.JAVA_HOME = "${theGlobalJava.home}";
 
     git = {
       enable = true;

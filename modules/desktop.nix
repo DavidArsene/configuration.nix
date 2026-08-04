@@ -1,7 +1,7 @@
 {
   pkgs,
   newpkgs,
-  helium-flake,
+  helium,
   ...
 }:
 let
@@ -25,15 +25,28 @@ let
 
       #* Random KDE
       # falkon
+      kamera
+      kamoso
       # karton
       # kasts
+      kbackup
       kcalc
       kcharselect
       # kdenlive
+      # kget
+      kgraphviewer
+      kmousetool
+      kompare
+      krohnkite
+      ktouch
       # krusader
       # konqueror
       krfb
       kweather
+      milou
+      plasma-disks
+      powerdevil
+      sierra-breeze-enhanced
 
       oxygen
       oxygen-icons
@@ -44,17 +57,21 @@ let
       kdebugsettings
       keysmith # 2FA
       kio-gdrive
+      sweeper
       systemdgenie
 
       #* Everything else
       btrfs-assistant
       # easyeffects
+      # fooyin
       karousel
       # keepassxc # still on qt5
+      klassy
       # kontainer
+      linux-wifi-hotspot
       notify-desktop
       qalculate-qt
-      ## qbittorrent
+      qbittorrent
       qc
       # qMasterPassword
       # qownnotes
@@ -80,9 +97,11 @@ let
     # losslesscut-bin
     # newpkgs.beeper
 
+    peazip
+    gpu-screen-recorder # TODO: -qt
     mitmproxy
 
-    opendrop
+    # opendrop
     packet
     # rquickshare
 
@@ -96,23 +115,7 @@ let
 
     # mypkgs.libreoffice
     # collabora-desktop
-    (callPackage (helium-flake + /helium.nix) {
-      libICE = libice;
-      libSM = libsm;
-      libX11 = libx11;
-      libXScrnSaver = libxscrnsaver;
-      libXcomposite = libxcomposite;
-      libXcursor = libxcursor;
-      libXdamage = libxdamage;
-      libXext = libxext;
-      libXfixes = libxfixes;
-      libXft = libxft;
-      libXi = libxi;
-      libXrandr = libxrandr;
-      libXrender = libxrender;
-      libXt = libxt;
-      libXtst = libxtst;
-    })
+    helium.packages.${pkgs.stdenv.system}.helium
 
   ];
   newPackages = with newpkgs; [
@@ -121,6 +124,7 @@ let
     btrfs-heatmap
     compsize
     cpu-x
+    ntfsprogs-plus
     uxplay
 
     pciutils
@@ -143,7 +147,6 @@ in
 
   environment.sessionVariables = {
     KWIN_USE_OVERLAYS = 1;
-    # QT_QUICK_CONTROLS_STYLE = "org.kde.union"; # 🎉
     NIXOS_OZONE_WL = 1;
   };
 

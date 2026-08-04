@@ -24,19 +24,11 @@ in
     # TODO: so that initrd can be completely removed.
     initrd.availableKernelModules = [ "nvme" ];
 
-    kernelModules = [ "ntsync" ];
-
-    blacklistedKernelModules = [
-      "sp5100_tco" # watchdog
-      "ntfs3" # use NTFSPLUS
-    ];
-
     kernelPackages = kernel;
 
     extraModulePackages = with kernel; [
       cpupower
       lenovo-legion-module
-      zenergy
     ];
 
     kernelParams = [
@@ -45,8 +37,6 @@ in
 
       "acpi_osi=!"
       ''acpi_osi="Windows 2015"''
-
-      "amd_pstate=active"
 
       # Additional logs
       # NOTE: prefer startup only
@@ -63,20 +53,17 @@ in
 
       # TODO: perf?
       # "pci=pci_bus_safe"
-      "pnp.debug" # CONFIG_PNP_DEBUG_MESSAGES
+      "pnp.debug=1" # CONFIG_PNP_DEBUG_MESSAGES
       # TODO: thermal gov bang bang
-    ];
 
-    loader.efi.canTouchEfiVariables = true;
+      "loglevel=7"
+    ];
   };
 
   environment.systemPackages = with pkgs; [
     #! mypkgs.lll
     # lenovo-legion
     # nvidia-system-monitor-qt
-    ryzenadj
-    ryzen-monitor-ng
-    amdctl
   ];
 
   fileSystems = {
@@ -84,6 +71,7 @@ in
       device = "/dev/disk/by-label/NixOS";
       fsType = "btrfs";
       options = [
+        # "discard"
         "noacl"
         "noatime"
         "compress=zstd:3"
@@ -112,60 +100,8 @@ in
     ACTION=="add", SUBSYSTEM=="pci", ATTR{power/wakeup}="disabled"
   '';
 
-  # TODO: Steam still requires 32bit
-  nixos.minify.no32BitGraphics = lib.mkForce false;
-
   hardware = {
-    cpu.amd.ryzen-smu.enable = true;
-    cpu.amd.updateMicrocode = true;
-
-    amdgpu = {
-      # overdrive.enable = true;
-      # overdrive.ppfeaturemask = "0xffffffff";
-      # initrd.enable = true; # bloats initrd by 15MB
-    };
-
-    nvidia = {
-      dynamicBoost.enable = true;
-      modesetting.enable = true;
-      powerManagement.enable = true;
-      powerManagement.finegrained = true;
-      # ! nvidia-smi wakes gpu and doesn't reflect real state
-
-      open = true;
-      package = kernel.nvidiaPackages.bleeding_edge;
-
-      prime = {
-        offload = {
-          enable = true;
-          enableOffloadCmd = true;
-          offloadCmdMainProgram = "prime-run";
-        };
-        # if lspci shows "0001:02:03.4", set this option to "PCI:2@1:3:4".
-        # lspci might omit the PCI domain (0001 above) if it is zero. Use "@0" instead.
-        # This option takes decimal while lspci reports hexadecimal.
-        # So, for device at domain "10000", use "@65536".
-        #
-        amdgpuBusId = "PCI:100@0:0:0"; # lspci = (@0) 64:00.0
-        nvidiaBusId = "PCI:1@0:0:0"; # lspci = (@0) 01:00.0
-      };
-    };
-
-    # xone.enable = true;
-    usbStorage.manageShutdown = true;
-
-    bluetooth = {
-      enable = true;
-      powerOnBoot = false;
-      settings = {
-        # https://github.com/bluez/bluez/blob/master/src/main.conf
-        General = {
-          Experimental = true;
-          Testing = true;
-          KernelExperimental = true;
-        };
-      };
-    };
+    nvidia.prime.amdgpuBusId = "PCI:100@0:0:0"; # lspci = (@0) 64:00.0
 
     firmware = [
       # dmesg | rg "Direct firmware load for"
@@ -222,39 +158,13 @@ in
     # Force kwin to use iGPU (64 as seen in hardware.nvidia.prime)
     # Otherwise depends on device initialization order.
     KWIN_DRM_DEVICES = "/dev/dri/by-path/pci-0000\\\\:64\\\\:00.0-card";
+    # TODO: does cardwire fix this?
   };
 
-  powerManagement.enable = true;
-  systemd.services.powerbottom = {
-    serviceConfig = {
-      Type = "simple";
-      ExecStart = "${lib.getExe pkgs.bash} ${./powertop.sh}";
-    };
-    wantedBy = [ "multi-user.target" ];
-  };
-
-  #* Mostly from nixos-hardware
   services = {
-    #* Weird way to enable NVIDIA drivers but ok
-    xserver.videoDrivers = [ "nvidia" ];
-
-    #* > AMD has better battery life with PPD over TLP:
-    # https://community.frame.work/t/responded-amd-7040-sleep-states/38101/13
-    power-profiles-daemon.enable = true;
-    tlp.enable = false; # TODO: TRY
-    auto-cpufreq.enable = false;
-    auto-cpufreq.settings = { };
-
     # FIXME: HEY this command breaks sleep, find reason, maybe its the same one
     # echo powersupersave > /sys/module/pcie_aspm/parameters/policy
     # appears to change `lspci -vv | grep 'ASPM.*abled;'`
-
-    fstrim.enable = true;
-
-    fwupd = {
-      enable = true;
-      extraRemotes = [ "lvfs-testing" ];
-    };
 
     fprintd = {
       enable = true;

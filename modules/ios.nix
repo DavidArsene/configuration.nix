@@ -1,5 +1,4 @@
-{ pkgs, ... }:
-{
+{ pkgs, ... }: {
 
   environment.systemPackages = with pkgs; [
     libimobiledevice
@@ -9,7 +8,7 @@
     libirecovery
     libideviceactivation
 
-    # WAITPR iloader
+    iloader
 
     # ifuse
     # idescriptor

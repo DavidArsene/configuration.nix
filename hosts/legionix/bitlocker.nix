@@ -6,7 +6,6 @@ let
     "D:" = "Data";
   }; # !
   idType = "partlabel";
-  # TODO: use ntfsplus
 
   ntfsMountOptions = [
     "rw"

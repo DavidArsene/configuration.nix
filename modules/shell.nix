@@ -24,20 +24,16 @@ with pkgs;
       l = "eza -laahg@MF --color-scale --icons --hyperlink --group-directories-first --time-style relative";
       trenew = "nix-tree --derivation /etc/nixos#nixosConfigurations.(hostname).config.system.build.toplevel";
 
-      # TODO: notgood?
-      sd = "sudo -E";
-
       nroots = "nix-store --gc --print-roots | rg -v -e /proc -e nix-process";
       nx = "nix --verbose --print-build-logs"; # --log-format bar-with-logs";
       # nix run but with the already downloaded nixpkgs
       nrn = "nx run --override-input nixpkgs nixpkgs";
       # run any command with the ability to write to the nix store
-      rw-store = "sd nsenter --env --mount --target (pgrep --oldest nix-daemon)";
+      rw-store = "sudo -E nsenter --env --mount --target (pgrep --oldest nix-daemon)";
     };
 
     #? Abbreviations are expanded when typed
     shellAbbrs = {
-      ltot = "l --total-size";
       ",sh" = ", --shell";
       # lmao
       "pretty --set-cursor" =
@@ -56,9 +52,54 @@ with pkgs;
 
   programs.starship = {
     enable = true;
-    package = starship;
+    presets = [
+      "nerd-font-symbols"
+      "bracketed-segments"
+    ];
+
     # settings = { }; # TODO: declarative
-    transientPrompt.enable = false;
+
+    transientPrompt = {
+      enable = true;
+      left = "starship module character";
+      right = "starship module time";
+    };
+  };
+
+  programs.atuin = {
+    enable = true;
+    enableFishIntegration = true;
+    flags = [
+      #      "--disable-up-arrow"
+      #      "--disable-ctrl-r"
+    ];
+    settings = {
+      #      auto_sync = true;
+      #      sync_address = "https://api.atuin.sh";
+      dialect = "uk";
+      update_check = false;
+      sync_frequency = "15m";
+      search_mode = "fulltext";
+      filter_mode = "global";
+      filter_mode_shell_up_key_binding = "host";
+      show_numeric_shortcuts = false;
+      show_tabs = false; # TODO: ?
+      secrets_filter = true;
+      stats = {
+        common_subcommands = [
+          "git"
+          "jj"
+          "nix"
+          "systemctl"
+        ];
+        common_prefix = [
+          "sudo"
+          ","
+        ];
+        ignored_commands = [ ];
+      };
+      sync.records = true;
+    };
   };
 
   # Periodic locatedb update for plocate
@@ -73,6 +114,7 @@ with pkgs;
     zoxide
 
     broot
+    fzf
     micro # nano
     ncdu
     superfile

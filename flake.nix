@@ -3,59 +3,32 @@
     inputs:
     let
       mylib = (import ./mylib.nix) inputs;
+    in
+    {
+      nixosConfigurations = mylib.genSystems {
+        hosts = {
+          legionix = "x86_64-linux";
+          phoenix = "aarch64-linux";
+          spacex = "x86_64-linux";
+        };
 
-      mkSystem =
-        system:
-        mylib.mkSystem {
-          inherit system;
+        specialArgs = system: {
+          newpkgs = inputs.newpkgs.legacyPackages.${system};
+          mypkgs = inputs.mypkgs.packages;
+        };
 
-          specialArgs = {
-            newpkgs = inputs.newpkgs.legacyPackages.${system};
-            mypkgs = inputs.mypkgs.packages;
-          };
-
-          commonModules = with mylib.myModules; [
+        commonModules =
+          mods: with mods; [
             common
             networking
             nix
             programs
-            samba
             shell
 
             minimal.nixosModules.main
             minimal.nixosModules.systemPath
             nix-index-db.nixosModules.nix-index
           ];
-        };
-
-    in
-    {
-      nixosConfigurations = {
-        phoenix = mkSystem "aarch64-linux" { hostName = "phoenix"; };
-
-        legionix = mkSystem "x86_64-linux" {
-          hostName = "legionix";
-
-          hostModules = with mylib.myModules; [
-            desktop
-            development
-            ios
-            gaming
-            # spicetify
-            # mypkgs.nixosModules.fprintd-fpc
-            # mypkgs.nixosModules.ro-cei-pcsc
-            mypkgs.nixosModules.ministeam
-            minimal.nixosModules.kde
-          ];
-        };
-
-        spacex = mkSystem "x86_64-linux" {
-          hostName = "spacex";
-          hostModules = with mylib.myModules; [
-            gaming
-            matei
-          ];
-        };
       };
 
       devShell.x86_64-linux = import ./shell.nix {
@@ -65,6 +38,11 @@
 
       #? Expose inputs for CLI commands to use same system versions.
       inherit inputs;
+
+      #? Ugly hack
+      idea =
+        inputs.self.nixosConfigurations."legionix".config.environment.systemPackages
+        |> inputs.nixpkgs.lib.findFirst (pkg: pkg.name == "jetbrains-idea-2026.2") null;
     };
 
   inputs = {
@@ -84,23 +62,21 @@
 
     nix-custom.url = "github:DavidArsene/nix";
 
-    home-manager.url = "github:nix-community/home-manager/master";
-
     nix-index-db.url = "github:nix-community/nix-index-database";
 
     spicetify.url = "github:Gerg-L/spicetify-nix";
 
-    helium-flake.url = "github:oxcl/nix-flake-helium-browser";
+    helium.url = "github:jcdickinson/helium-wv";
 
     kwin-blur.url = "github:xarblu/kwin-effects-better-blur-dx";
 
     mypkgs.inputs.nixpkgs.follows = "nixpkgs";
     nix-custom.inputs.nixpkgs.follows = "nixpkgs/src";
-    home-manager.inputs.nixpkgs.follows = "newpkgs";
     nix-index-db.inputs.nixpkgs.follows = "nixpkgs";
     spicetify.inputs.nixpkgs.follows = "nixpkgs";
     spicetify.inputs.systems.follows = "kwin-blur/utils/systems";
-    helium-flake.inputs.nixpkgs.follows = "nixpkgs";
+    helium.inputs.nixpkgs.follows = "nixpkgs/src";
+    helium.inputs.utils.follows = "kwin-blur/utils";
     kwin-blur.inputs.nixpkgs.follows = "nixpkgs";
 
     # FIXME: Almost works

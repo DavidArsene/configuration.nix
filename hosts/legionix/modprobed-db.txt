@@ -248,7 +248,7 @@ dm_crypt
 dm_mod
 dm_zero
 encrypted_keys
-ntfs3
+# ntfs3
 tee
 trusted
 
@@ -469,3 +469,7 @@ nls_utf8
 
 # test, dep for all others
 snd_hda_acpi
+
+# tuned? and what
+cpufreq_conservative
+xt_REDIRECT

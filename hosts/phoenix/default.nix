@@ -82,7 +82,7 @@
 
     linkwarden = {
       enable = false;
-      port = 121123; # lkw
+      port = 1223; # lw
       # enableRegistration = true;
     };
     meilisearch = {

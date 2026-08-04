@@ -1,9 +1,6 @@
 {
   config,
-  mylib,
-  nix-custom,
   pkgs,
-  self,
   ...
 }:
 {
@@ -18,7 +15,10 @@
       # max-jobs = 0; # delegate all builds to server
       sandbox = "relaxed";
       # show-trace = true;
-      trusted-substituters = [ "https://nix-community.cachix.org" ];
+      trusted-substituters = [
+        "https://nix-community.cachix.org"
+        "https://helium-wv.cachix.org"
+      ];
       trusted-users = [ "@wheel" ];
       warn-dirty = false;
     }
@@ -30,9 +30,11 @@
       experimental-features = [
         "auto-allocate-uids"
         "ca-derivations"
+        "configurable-impure-env" # TODO tryme
         "nix-command"
         "flakes"
         "local-overlay-store"
+        # "parallel-eval" # meeeeeeeeeeeeeeeeeee to
         "pipe-operators"
       ];
       use-xdg-base-directories = true;
@@ -41,8 +43,8 @@
     channel.enable = false;
 
     # package = pkgs.lix;
-    # package = pkgs.nixVersions.latest;
-    package = mylib.marchNative pkgs nix-custom.packages.${pkgs.stdenv.system}.default;
+    package = pkgs.nixVersions.latest;
+    # package = nix-custom.packages.${pkgs.stdenv.system}.default;
     # Modernizing ends here.
 
     buildMachines = [
@@ -98,13 +100,8 @@
   };
 
   environment.etc = {
-    #? Make /etc/nixos point to the local copy of the config,
-    #? such that all nix commands find it without --flake.
-    "nixos".source = "/home/${config.users.myself}/.nix/configuration.nix/";
-
-    #? Similarly, a link to the version of
-    #? the config used to build this system.
-    "source".source = self;
+    #? A link to the version of the config used to build this system.
+    # "source".source = self;
   };
 
   system.nixos.label = config.system.nixos.release;

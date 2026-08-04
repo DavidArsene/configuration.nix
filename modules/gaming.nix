@@ -1,74 +1,76 @@
 {
-  # nix-gaming,
+  config,
   mypkgs,
+  lib,
   pkgs,
   ...
 }:
-# let
-# pkgs = newpkgs; # LSP
-# in
+
 {
   # TODO: home-manager
   # programs.mangohud.enable = true;
 
-  environment.systemPackages =
-    (with pkgs; [
-      # (mylib.marchNative pkgs mypkgs.wine)
-      # winetricks
-      # wine-wayland
+  environment.systemPackages = with pkgs; [
+    # (mylib.marchNative pkgs mypkgs.wine)
+    # winetricks
 
-      # TODO: wine for android
-      # android-translation-layer
-      # FIXME: coolercontrol daemon
-      coolercontrol.coolercontrol-gui
+    # TODO: wine for android
+    # android-translation-layer
 
-      #> Dependencies
-      # dxvk
-      # vkd3d-proton
+    lsfg-vk
+    lsfg-vk-ui
 
-      lsfg-vk
-      lsfg-vk-ui
+    mangohud
+    mangojuice
+    goverlay
 
-      #> Extras
-      # pkgs.goverlay
-      # (mangohud.override {
-      #   #? No gamescope, mangoapp, and mangohudctl.
-      #   #? Removes OpenGL and Xorg dependencies.
-      #   gamescopeSupport = false;
-      #   lowerBitnessSupport = false;
-      # })
-      mangohud
-      mangojuice
+    # nvtopPackages.nvidia
+    amdgpu_top
 
-      # (q4wine.override { wine = wineCustom; })
+    vulkan-tools
+    vulkan-tools-lunarg
 
-      # TODO: no cuda?
-      nvtopPackages.nvidia
-      pkgs.amdgpu_top
-      vulkan-tools
-      vulkan-tools-lunarg
-    ])
+    # (mypkgs.minecraft.prismlauncher-zing.override {
+    #   glfw-wayland = mylib.marchNative pkgs mypkgs.minecraft.glfw-wayland;
+    # })
 
-    ++ (with pkgs; [
-      # (mypkgs.minecraft.prismlauncher-zing.override {
-      #   glfw-wayland = mylib.marchNative pkgs mypkgs.minecraft.glfw-wayland;
-      # })
+    innoextract # > for Windows GOG installers
+    #* for Linux installers use https://github.com/Yepoleb/gogextract
+  ];
 
-      innoextract # > for Windows GOG installers
-      #* for Linux installers use https://github.com/Yepoleb/gogextract
-    ]);
+  boot.kernelModules = [ "ntsync" ];
 
-  comment = ''
-    reaper does: prctl(36, 1, 0, 0, 0) != -1
+  hardware.nvidia = {
+    dynamicBoost.enable = true;
+    modesetting.enable = true;
+    powerManagement.enable = true;
+    powerManagement.finegrained = true;
+    # ! using nvidia-smi wakes gpu and doesn't reflect real state
 
-    $STEAM/ubuntu12_32/reaper SteamLaunch AppId=###### \
-    -- $STEAM/ubuntu12_32/steam-launch-wrapper \
-    -- $STEAM/steamapps/common/SteamLinuxRuntime_sniper/_v2-entry-point --verb=waitforexitandrun \
-    -- $STEAM/compatibilitytools.d/*/proton waitforexitandrun \
-    $STEAM/steamapps/common/Game/Game.exe
-  '';
+    open = true;
+    package = config.boot.kernelPackages.nvidiaPackages.bleeding_edge;
+
+    prime = {
+      offload = {
+        enable = true;
+        enableOffloadCmd = true;
+        offloadCmdMainProgram = "prime-run";
+      };
+      # > if lspci shows "0001:02:03.4", set this option to "PCI:2@1:3:4".
+      # > lspci might omit the PCI domain (0001 above) if it is zero. Use "@0" instead.
+      # > This option takes decimal while lspci reports hexadecimal.
+      # > So, for device at domain "10000", use "@65536".
+      #
+      # amdgpuBusId = "...";
+      # intelBusId = "...";
+      nvidiaBusId = lib.mkDefault "PCI:1@0:0:0"; # lspci = (@0) 01:00.0
+    };
+  };
 
   services = {
+    #* Weird way to enable NVIDIA drivers but ok
+    xserver.videoDrivers = [ "nvidia" ];
+
     lact.enable = false; # TODO:
   };
 
@@ -78,18 +80,23 @@
       package = mypkgs.custeam.override {
 
         extraEnv = {
+          STEAM_RUNTIME = 0;
           MANGOHUD = true;
           # OBS_VKCAPTURE = true;
           # RADV_TEX_ANISO = 16;
         };
 
-        extraArgs = "-dev";
+        extraArgs = [
+          "-dev"
+          "-compat-force-slr off"
+          # "-pipewire-dmabuf"
+        ];
       };
 
-      extraCompatPackages = with pkgs; [ steam-play-none ];
-
-      # nix-gaming platformOptimizations
-      #      platformOptimizations.enable = true;
+      extraCompatPackages = [
+        pkgs.steam-play-none
+        mypkgs.steam-play-nix
+      ];
     };
 
     gamemode = {
@@ -97,7 +104,9 @@
       enableRenice = true;
 
       settings = { };
-      # manually set for now
     };
+
+    coolercontrol.enable = true;
+    # coolercontrol.nvidiaSupport = true;
   };
 }

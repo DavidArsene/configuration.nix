@@ -1,40 +1,73 @@
-{ config, pkgs, ... }:
+{ config, mylib, ... }:
+let
+  hotspot-if = "wlp2s0";
+in
 {
-  imports = [
+  imports = with mylib.myModules; [
+    amd
+    desktop
+    development
+    laptop
+    # ios
+    gaming
+    samba
+    # spicetify
+    # mypkgs.nixosModules.fprintd-fpc
+    # mypkgs.nixosModules.ro-cei-pcsc
+    minimal.nixosModules.kde
+
     ./hardware.nix
     ./looking-glass.nix
   ];
 
-  # virtualisation.waydroid.enable = true;
-
   boot.loader.systemd-boot = {
-    enable = true;
-    consoleMode = "max";
-    configurationLimit = 6;
-    editor = false; # TODO: better default worthy?
-
-    edk2-uefi-shell.enable = true;
-    netbootxyz.enable = true;
-
     windows."11" = {
       title = "Windows 11";
       efiDeviceHandle = "HD0b";
       sortKey = "hahaha";
     };
   };
+  #  services.create_ap TODO
+
+  services.hostapd.enable = false;
+  services.hostapd.radios = {
+    ${hotspot-if} = {
+      countryCode = "RO";
+      band = "5g";
+      channel = 0; # Automatic
+      settings = { };
+
+      wifi4.enable = false;
+      wifi5.enable = false;
+      wifi6 = {
+        enable = true;
+        operatingChannelWidth = "80+80"; # 160?
+      };
+
+      networks.${hotspot-if} = {
+        ssid = "…";
+        settings = { };
+
+        authentication = {
+          mode = "wpa3-sae";
+          enableRecommendedPairwiseCiphers = true;
+          # saeAddToMacAllow = true;
+
+          saePasswords = [ { password = "1½⅓¼⅕⅙⅐⅛⅑⅒"; } ];
+        };
+      };
+    };
+  };
+
+  #  nixos.minify.depsToReplace = {
+  #    glibc = mylib.marchNative pkgs pkgs.glibc;
+  #    zlib = mylib.marchNative pkgs pkgs.zlib;
+  #  };
 
   services.duplicati = {
     # enable = true; FIXME: good but large
     user = config.users.myself;
     parameters = "";
-  };
-
-  virtualisation.incus = {
-    enable = false;
-    package = pkgs.incus; # default is lts
-    socketActivation = true;
-    #! agent.enable = true; # on guests
-    ui.enable = true;
   };
 
   # HARRY DID YOU READ THE COMMENT?
