@@ -1,5 +1,4 @@
 {
-  config,
   mypkgs,
   lib,
   pkgs,
@@ -48,7 +47,8 @@
     # ! using nvidia-smi wakes gpu and doesn't reflect real state
 
     open = true;
-    package = config.boot.kernelPackages.nvidiaPackages.bleeding_edge;
+    branch = "bleeding_edge";
+    nvidiaSettings = false; # LACT has all settings
 
     prime = {
       offload = {
@@ -71,7 +71,17 @@
     #* Weird way to enable NVIDIA drivers but ok
     xserver.videoDrivers = [ "nvidia" ];
 
-    lact.enable = false; # TODO:
+    lact.enable = true;
+    # lact.settings = { }; TODO:
+
+    cardwired.enable = true;
+    cardwired.settings = {
+      experimental_nvidia_block = true;
+      external_display_auto_switch = true;
+      # integrated = block all, smart = uses allowlist
+      battery_auto_switch = true;
+      battery_auto_switch_mode = "integrated";
+    };
   };
 
   programs = {
@@ -80,14 +90,22 @@
       package = mypkgs.custeam.override {
 
         extraEnv = {
-          STEAM_RUNTIME = 0;
+          # STEAM_RUNTIME = false; NO!
+          STEAM_LINUX_RUNTIME_VERBOSE = true;
           MANGOHUD = true;
           # OBS_VKCAPTURE = true;
           # RADV_TEX_ANISO = 16;
+
+          PROTON_ENABLE_WAYLAND = true; # Proton forks only
+          PROTON_NO_XIM = true; # Keyboard/Mouse -> Controller
+          PROTON_USE_WOW64 = true; # Required for 64-bit only setup
+          PROTON_USE_XALIA = false; # Controller -> Keyboard/Mouse
+          # TODO: ntsync?
         };
 
         extraArgs = [
           "-dev"
+          "-noverifyfiles"
           "-compat-force-slr off"
           # "-pipewire-dmabuf"
         ];
@@ -95,7 +113,7 @@
 
       extraCompatPackages = [
         pkgs.steam-play-none
-        mypkgs.steam-play-nix
+        # mypkgs.steam-play-nix
       ];
     };
 

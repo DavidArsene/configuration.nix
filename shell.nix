@@ -1,6 +1,10 @@
 { self, pkgs, ... }:
 let
   kernel = pkgs.linux_latest;
+
+  mp = import (self + /hosts/legionix/mpdb-test.nix);
+
+  # str = mp |> lib.uniqList |> lib.concatStringsSep "\n"
 in
 
 pkgs.mkShell {
@@ -47,10 +51,10 @@ pkgs.mkShell {
       echo "new config"
       cp "${kernel.configfile}" .config
 
-      checkpoint "orig"
+      checkpoint "nixos"
     fi
 
-    cat ${self + /hosts/legionix/modprobed-db.txt} | rg -v -e '#' -e '^$' | uniq > lsmod.txt
+    cat ${self}/hosts/legionix/modprobed-db.txt | rg -v -e '#' -e '^$' | uniq > lsmod.txt
 
     LSMOD=lsmod.txt make localmodconfig
     checkpoint "lsmod"

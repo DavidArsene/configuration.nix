@@ -26,6 +26,76 @@
 
 		<!--! https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#Improving_performance_on_AMD_CPUs -->
 		<feature name="topoext" policy="require" />
+		<!--
+		 feature:
+- +@name: monitor
+- +@name: x2apic
+- +@name: osxsave
+- +@name: ht
+- +@name: erms
+- +@name: invpcid
+- +@name: cmt
+- +@name: avx512f
+- +@name: avx512dq
+- +@name: avx512ifma
+- +@name: avx512cd
+- +@name: avx512bw
+- +@name: avx512vl
+- +@name: avx512vbmi
+- +@name: pku
+- +@name: ospke
+- +@name: avx512vbmi2
+- +@name: cet-ss
+- +@name: gfni
+- +@name: vaes
+- +@name: vpclmulqdq
+- +@name: avx512vnni
+- +@name: avx512bitalg
+- +@name: avx512-vpopcntdq
+- +@name: fsrm
+- +@name: flush-l1d
+- +@name: avx512-bf16
+- +@name: mbm_total
+- +@name: mbm_local
+- +@name: cmp_legacy
+- +@name: extapic
+- +@name: ibs
+- +@name: skinit
+- +@name: wdt
+- +@name: tce
+- +@name: topoext
+- +@name: perfctr_nb
+- +@name: overflow-recov
+- +@name: succor
+- +@name: invtsc
+- +@name: stibp-always-on
+- +@name: amd-psfd
+- +@name: lbrv
+- +@name: svm-lock
+- +@name: tsc-scale
+- +@name: vmcb-clean
+- +@name: flushbyasid
+- +@name: decodeassists
+- +@name: pause-filter
+- +@name: pfthreshold
+- +@name: vgif
+- +@name: gmet
+- +@name: vnmi
+- +@name: svme-addr-chk
+- +@name: no-nested-data-bp
+- +@name: fs-gs-base-ns
+- +@name: lfence-always-serializing
+- +@name: null-sel-clr-base
+- +@name: auto-ibrs
+- +@name: perfmon-v2
+- +@name: rdctl-no
+- +@name: skip-l1dfl-vmentry
+- +@name: mds-no
+- +@name: pschange-mc-no
+- +@name: gds-no
+- +@name: rfds-no
+- +@name: its-no
+		 -->
 
 		<!-- FIXME:::::::::::::::::::::::::::::::::::::::: -->
 		<!-- <feature policy="disable" name="svm" />
@@ -115,7 +185,7 @@
 		<!-- region Network -->
 		<interface type="network">
 			<mac address="52:54:00:14:a8:f3" />
-			<source network="v4test" />
+			<source network="vmnet" />
 			<model type="virtio-non-transitional" />
 			<driver name="vhost" queues="7" />
 		</interface>
@@ -125,18 +195,16 @@
 		<!--* NOTE: All devices from one IOMMU group must be passed together -->
 		<!--* https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#Ensuring_that_the_groups_are_valid -->
 
-		<!-- NVIDIA GeForce RTX 4060 Max-Q / Mobile (VGA) -->
+		<!-- NVIDIA GeForce RTX 4060 Max-Q / Mobile (VGA) [0000:01:00.0] -->
 		<hostdev mode="subsystem" type="pci" managed="yes">
 			<source>
-				<!-- 0000:01:00.0 -->
 				<address domain="0000" bus="01" slot="00" function="0" />
 			</source>
 		</hostdev>
 
-		<!-- NVIDIA High Definition Audio Controller -->
+		<!-- NVIDIA High Definition Audio Controller [0000:01:00.1] -->
 		<hostdev mode="subsystem" type="pci" managed="yes">
 			<source>
-				<!-- 0000:01:00.1 -->
 				<address domain="0000" bus="01" slot="00" function="1" />
 			</source>
 		</hostdev>
@@ -144,9 +212,9 @@
 
 		<!-- region Input Devices -->
 		<!--* NOTE: evdev takes complete control until released (except for grabToggle) -->
-		<input type="passthrough" bus="virtio">
+		<!-- <input type="passthrough" bus="virtio">
 			<source evdev="/dev/input/by-path/platform-AMDI0010:00-event-mouse" />
-		</input>
+		</input> -->
 		<input type="evdev">
 			<source dev="/dev/input/by-id/usb-ITE_Tech._Inc._ITE_Device_8258_-event-kbd"
 			        grabToggle="alt-alt"
@@ -158,8 +226,8 @@
 
 		<!--? Use VirtIO input instead of standard PS/2 ones -->
 		<!--* Not needed for evdev? -->
-		<input bus="virtio" type="mouse" />
-		<input bus="virtio" type="keyboard" />
+		<!-- <input bus="virtio" type="mouse" /> -->
+		<!-- <input bus="virtio" type="keyboard" /> -->
 		<!-- endregion -->
 
 		<!-- region Declarative USB Device Redirection -->
@@ -203,7 +271,7 @@
 	<os firmware="efi">
 		<!--* https://wiki.qemu.org/Features/Q35 -->
 		<!--! NOTE: Pay attention to any changes QEMU may do during updates -->
-		<type arch="x86_64" machine="pc-q35-11.0">hvm</type>
+		<type arch="x86_64" machine="pc-q35-11.1">hvm</type>
 
 		<!-- Used to choose a <loader> -->
 		<!-- https://libvirt.org/formatdomaincaps.html#guest-firmware -->

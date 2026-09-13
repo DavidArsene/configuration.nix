@@ -1,7 +1,9 @@
 {
   pkgs,
   newpkgs,
+  mypkgs,
   helium,
+  kwin-blur,
   ...
 }:
 let
@@ -12,51 +14,47 @@ let
     with pkgs;
     with kpkgs;
     [
-      #* Official KDE
-      filelight
-      kate
-      kdeconnect-kde
-      # kdevelop
-      # krita
-      plasma-sdk
-      yakuake
-
-      # TODO: .desktop file for qdbusviewer
-
-      #* Random KDE
+      drawy
       # falkon
+      filelight
       kamera
       kamoso
+      karousel
       # karton
       # kasts
+      kate
       kbackup
       kcalc
       kcharselect
+      kdebugsettings
+      kdeconnect-kde
       # kdenlive
+      # kdevelop
+      keysmith # 2FA
       # kget
       kgraphviewer
+      kio-gdrive
+      klassy
       kmousetool
       kompare
-      krohnkite
-      ktouch
-      # krusader
+      # kontainer
       # konqueror
       krfb
+      # krita
+      krohnkite
+      # krusader
+      ksystemlog
+      ktouch
       kweather
       milou
-      plasma-disks
-      powerdevil
-      sierra-breeze-enhanced
-
       oxygen
       oxygen-icons
       oxygen-sounds
-
-      #* Obscure KDE
-      ksystemlog
-      kdebugsettings
-      keysmith # 2FA
-      kio-gdrive
+      plasma-disks
+      plasma-panel-colorizer
+      plasma-sdk
+      powerdevil
+      sierra-breeze-enhanced
       sweeper
       systemdgenie
 
@@ -64,10 +62,7 @@ let
       btrfs-assistant
       # easyeffects
       # fooyin
-      karousel
       # keepassxc # still on qt5
-      klassy
-      # kontainer
       linux-wifi-hotspot
       notify-desktop
       qalculate-qt
@@ -77,18 +72,21 @@ let
       # qownnotes
       qdirstat
       qt6.qttools
-      tail-tray # trayscale but qt
+      # tail-tray # trayscale but qt
       uefitool
       unar # test for ark
       waycheck
       wl-clipboard-rs
 
-      # kwin-blur.packages.${config.users.system}.default
-      # mypkgs.kde-shader-wallpaper
-      plasma-panel-colorizer
-
-      # nixd # TODO: for kate
-    ];
+      kwin-blur.packages.${pkgs.stdenv.system}.default
+      mypkgs.kde-shader-wallpaper
+    ]
+    ++
+      # testing .desktop files for already installed pkgs
+      [
+        geoclue2
+        v4l-utils
+      ];
 
   #? Larger apps to be updated slower
   otherPackages = with pkgs; [
@@ -98,14 +96,12 @@ let
     # newpkgs.beeper
 
     peazip
-    gpu-screen-recorder # TODO: -qt
     mitmproxy
 
     # opendrop
     packet
     # rquickshare
 
-    #> And less frequently used
     cryptsetup
     tpm2-pkcs11
     tpm2-tools
@@ -143,6 +139,25 @@ in
 
     # TODO: smartd the rest
     smartd.notifications.test = true;
+
+    howdy.enable = false; # no ir :(
+    howdy.settings = {
+      core = {
+        detection_notice = true; # Notify about detection
+        use_cnn = true; # Better model
+        # workaround = "off";
+      };
+      video = {
+        certainty = 3.5; # 1 to 10, the lower, the more accurate
+        timeout = 4;
+        max_height = 720;
+        # recording_plugin = "opencv";
+      };
+      rubberstamps = {
+        enabled = true;
+        stamp_rules = "TODO";
+      };
+    };
   };
 
   environment.sessionVariables = {
@@ -157,6 +172,8 @@ in
     partition-manager.enable = true;
     # appimage.enable = true;
     # appimage.binfmt = true;
+    gpu-screen-recorder.enable = true;
+    gpu-screen-recorder.ui.enable = true;
   };
 
   #? Difference between NFM and NF fonts

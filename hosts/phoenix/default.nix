@@ -1,5 +1,4 @@
 {
-  config,
   lib,
   pkgs,
   ...
@@ -7,12 +6,9 @@
 {
   imports = [ ./oci.nix ];
 
-  nix.buildMachines = lib.mkForce [ ];
-
   programs.java.package = pkgs.temurin-jre-bin-25;
 
   nix.enable = false;
-  # nix.package = lib.mkForce pkgs.nixVersions.latest;
 
   environment.systemPackages = with pkgs; [
     fex-headless
@@ -65,45 +61,6 @@
 
       #? A secret third thing: convert a token to credentialsFile json
       #$ echo TOKEN | base64 -d | jq -r '{ AccountTag: .a, TunnelId: .t, TunnelSecret: .s }' | tee *.json
-    };
-
-    stirling-pdf = {
-      enable = false;
-      package =
-        let
-          homepage = "https://github.com/Stirling-Tools/Stirling-PDF";
-          version = "2.8.0";
-        in
-        pkgs.fetchurl {
-          url = "${homepage}/releases/download/v${version}/Stirling-PDF-with-login.jar";
-          hash = "sha256-175xODiXS9MGdlF2BNBi8q09uYOkQV9nIsCdQQMV390=";
-        };
-    };
-
-    linkwarden = {
-      enable = false;
-      port = 1223; # lw
-      # enableRegistration = true;
-    };
-    meilisearch = {
-      enable = false;
-      settings = {
-        experimental_reduce_indexing_memory_usage = true;
-      };
-    };
-  };
-
-  systemd.services.stirling-pdf = {
-    path = with pkgs; [
-      # calibre FIXME: big; also provides ebook-convert
-      # rar FIXME: not in aarch64
-      ffmpeg-headless
-      imagemagick
-      fontforge # -fonttools ??
-    ];
-
-    serviceConfig = {
-      ExecStart = lib.mkForce "${lib.getExe config.programs.java.package} -jar ${config.services.stirling-pdf.package}";
     };
   };
 

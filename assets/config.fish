@@ -29,5 +29,3 @@ end
 function whrl
     dirname (readlink (which $argv[1]))
 end
-
-zoxide init fish | source

@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, lib, ... }:
 let
   #? Defaults to checking display managers.
   isDesktop = config.services.displayManager.enable;
@@ -20,10 +20,16 @@ in
   };
 
   networking = {
-    useNetworkd = !isDesktop;
     search = [ "lab" ];
     # nftables.enable = ??? FIXME:
+    wireless.iwd.settings = {
+      General = {
+        AddressRandomization = "network";
+        AddressRandomizationRange = "nic";
+      };
+    };
   };
+  systemd.network.enable = lib.mkDefault (!isDesktop);
 
   services = {
     resolved = {

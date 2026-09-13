@@ -100,10 +100,11 @@ in
     # edl
     # mypkgs.samba-manager
     # gg-jj
+    uv
 
     nix-init
 
-    # idea
+    idea
     # mypkgs.ida-pro
   ];
 

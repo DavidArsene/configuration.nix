@@ -1,4 +1,4 @@
-{ pkgs, ... }: {
+{ config, pkgs, ... }: {
 
   boot = {
     loader.efi.canTouchEfiVariables = true;
@@ -38,45 +38,6 @@
     power-profiles-daemon.enable = false;
     # auto-cpufreq.enable = false;
 
-    tlp = {
-      enable = false;
-      pd.enable = true;
-      settings = {
-        TLP_DISABLE_DEFAULTS = 1;
-        TLP_AUTO_SWITCH = 1; # always switch
-        # TLP_PROFILE_DEFAULT = "SAV";
-        TLP_PROFILE_AC = "BAL";
-        TLP_PROFILE_BAT = "SAV";
-
-        SOUND_POWER_SAVE_ON_BAT = 5;
-        SOUND_POWER_SAVE_CONTROLLER = "Y";
-
-        # START_CHARGE_THRESH_BAT0 = 0; # dummy value for Lenovo
-        # STOP_CHARGE_THRESH_BAT0 = 1; # means enable for Lenovo
-
-        AHCI_RUNTIME_PM_ON_BAT = "auto";
-
-        MAX_LOST_WORK_SECS_ON_BAT = 30;
-
-        RADEON_DPM_PERF_LEVEL_ON_SAV = "auto";
-        AMDGPU_ABM_LEVEL_ON_BAT = 0;
-        AMDGPU_ABM_LEVEL_ON_SAV = 3;
-
-        NMI_WATCHDOG = 0;
-
-        # WIFI_PWR_ON_AC = "off";
-        # WIFI_PWR_ON_BAT = "on";
-
-        WOL_DISABLE = "Y";
-
-        PLATFORM_PROFILE_ON_BAT = "balanced";
-        PLATFORM_PROFILE_ON_SAV = "low-power";
-
-        SATA_LINKPWR = "med_power_with_dipm";
-        USB_BLACKLIST_PHONE = 1;
-      };
-    };
-
     tuned = {
       enable = true;
       # https://github.com/redhat-performance/tuned/blob/master/tuned-main.conf
@@ -108,7 +69,15 @@
       #      };
     };
 
-    fstrim.enable = true; # TODO: discard?
+    logind.settings.Login = {
+      IdleAction = "sleep";
+      IdleActionSec = 10 * 60;
+      # Handle* options overriden(?) by DE
+    };
+
+    # NOTE: filesystems mounted with `discard=async`
+    # TODO: check they actually are, esp. /home ext4
+    # fstrim.enable = true;
 
     fwupd = {
       enable = true;
@@ -116,8 +85,9 @@
     };
 
     ananicy = {
-      # enable = true;
-      rulesProvider = pkgs.ananicy-rules-cachyos;
+      enable = true;
+      package = pkgs.ananicy-rules-cachyos;
+      rulesProvider = config.services.ananicy.package;
     };
   };
 }

@@ -4,19 +4,20 @@
 set unstable
 set lists
 
+flake := "--flake .#" + env("HOST", "")
 overrides := "--override-input " + [
     if path_exists("../nur.nix") { "mypkgs ../nur.nix" },
     if path_exists("../minimal.nix") { "minimal ../minimal.nix" },
 ]
-# if path_exists("../private.nix") { "private ../private.nix" },
+# if path_exists("../67cade0eb2629d875712c6283ae1557d") { "newpkgs ../67cade0eb2629d875712c6283ae1557d" },
 
 dry *args:
-    nixos-rebuild dry-build --print-build-logs {{ overrides ++ args }}
+    nixos-rebuild dry-build {{ flake ++ overrides ++ args }}
 
 export NIXOS_MINIFY_REPLACE_DEPS := "1"
-nom_suffix := " --log-format internal-json |& nom --json"
-build_args := overrides ++ " --impure --keep-going --sudo --no-reexec --diff"
-# host_args := [ "--target-host ", "--build-host ", "--flake .#"]
+nom_suffix := "--log-format internal-json |& nom --json"
+build_args := flake ++ overrides ++ "--impure --keep-going --sudo --no-reexec --diff"
+# host_args := [ "--target-host ", "--build-host " ]
 
 # [arg("host", long)]
 [arg("cmd", pattern="boot|test|switch")]
@@ -35,4 +36,4 @@ update:
     nix flake update --verbose
 
 repl:
-    nixos-rebuild repl
+    nixos-rebuild repl {{ flake }}

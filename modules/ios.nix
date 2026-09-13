@@ -16,7 +16,7 @@
 
   services = {
     usbmuxd.enable = true;
-    usbmuxd.package = pkgs.usbmuxd; # usbmuxd2
+    usbmuxd.package = pkgs.usbmuxd; # usbmuxd2?
 
     # For AirPlay with UxPlay
     avahi = {

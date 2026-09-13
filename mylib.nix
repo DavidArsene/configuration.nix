@@ -34,6 +34,14 @@ let
       |> mapAttrs' (name: _: nameValuePair (removeSuffix ".nix" name) ./modules/${name})
       |> (_: _ // inputs);
 
+    _system = "TODO";
+    pkgsForFlake =
+      input:
+      let
+        pkgsAttr = input.packages or input.legacyPackages;
+      in
+      pkgsAttr.${_system} or pkgsAttr;
+
     #?
     #? Wrapper for everything (?) needed for a multi-host NixOS flake.
     #? Call this first with common customizations for all hosts, then
@@ -48,7 +56,7 @@ let
       mapAttrs (
         hostName: system:
 
-        #! Use the the custom nixosSystem from minimal.nix
+        #! Uses the the custom nixosSystem from minimal.nix
         nixosSystem {
           inherit system;
           specialArgs = inputs // (specialArgs system) // { mylib = this; };

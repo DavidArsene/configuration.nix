@@ -9,7 +9,6 @@
         hosts = {
           legionix = "x86_64-linux";
           phoenix = "aarch64-linux";
-          spacex = "x86_64-linux";
         };
 
         specialArgs = system: {
@@ -38,11 +37,6 @@
 
       #? Expose inputs for CLI commands to use same system versions.
       inherit inputs;
-
-      #? Ugly hack
-      idea =
-        inputs.self.nixosConfigurations."legionix".config.environment.systemPackages
-        |> inputs.nixpkgs.lib.findFirst (pkg: pkg.name == "jetbrains-idea-2026.2") null;
     };
 
   inputs = {
@@ -77,7 +71,7 @@
     spicetify.inputs.systems.follows = "kwin-blur/utils/systems";
     helium.inputs.nixpkgs.follows = "nixpkgs/src";
     helium.inputs.utils.follows = "kwin-blur/utils";
-    kwin-blur.inputs.nixpkgs.follows = "nixpkgs";
+    kwin-blur.inputs.nixpkgs.follows = "nixpkgs/src";
 
     # FIXME: Almost works
     # https://github.com/NixOS/nixpkgs/archive/nixos-unstable@%7B2025-11-11%7D.tar.gz

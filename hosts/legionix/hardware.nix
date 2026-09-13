@@ -38,16 +38,12 @@ in
       "acpi_osi=!"
       ''acpi_osi="Windows 2015"''
 
-      # Additional logs
-      # NOTE: prefer startup only
       # "apic=verbose"
       "console_msg_format=syslog"
-      # "earlyprintk=vga"
       # "hpet=verbose"
       # "ignore_loglevel"
       "lsm.debug=1"
 
-      # FIXME: keep?
       "audit=off"
       "bgrt_disable"
 
@@ -55,14 +51,12 @@ in
       # "pci=pci_bus_safe"
       "pnp.debug=1" # CONFIG_PNP_DEBUG_MESSAGES
       # TODO: thermal gov bang bang
-
-      "loglevel=7"
     ];
   };
 
   environment.systemPackages = with pkgs; [
     #! mypkgs.lll
-    # lenovo-legion
+    lenovo-legion
     # nvidia-system-monitor-qt
   ];
 
@@ -71,7 +65,6 @@ in
       device = "/dev/disk/by-label/NixOS";
       fsType = "btrfs";
       options = [
-        # "discard"
         "noacl"
         "noatime"
         "compress=zstd:3"
@@ -84,7 +77,7 @@ in
         "defaults"
         "noatime"
         "commit=30"
-        "lazytime"
+        # "lazytime"
       ];
     };
     "/boot" = {
@@ -101,7 +94,7 @@ in
   '';
 
   hardware = {
-    nvidia.prime.amdgpuBusId = "PCI:100@0:0:0"; # lspci = (@0) 64:00.0
+    nvidia.prime.amdgpuBusId = "PCI:101@0:0:0"; # lspci = (@0) 65:00.0
 
     firmware = [
       # dmesg | rg "Direct firmware load for"
@@ -133,6 +126,7 @@ in
 
           "nvidia/ad102/"
           "rtl_nic/rtl8156b-*.fw"
+
           "rtl_nic/rtl8153a-*.fw"
 
           # https://gitlab.com/kernel-firmware/linux-firmware/-/commit/2b6dd0c8
@@ -148,17 +142,10 @@ in
           ${lib.getExe' pkgs.util-linux "rename"} -v 17aa38b4 17aa38b7 cirrus/*
         '';
 
-        hash = "sha256-s24OU/K1NBZ+neUF9DN9vJRIV7csB7q+a9VZlv/GNaQ=";
+        hash = "sha256-AF3g3YYsQBeWk6m0EGIl8Zh6+Kd0OFGESs9oQ+14fXo=";
         tag = pkgs.microcode-amd.version;
       })
     ];
-  };
-
-  environment.sessionVariables = {
-    # Force kwin to use iGPU (64 as seen in hardware.nvidia.prime)
-    # Otherwise depends on device initialization order.
-    KWIN_DRM_DEVICES = "/dev/dri/by-path/pci-0000\\\\:64\\\\:00.0-card";
-    # TODO: does cardwire fix this?
   };
 
   services = {
@@ -167,9 +154,15 @@ in
     # appears to change `lspci -vv | grep 'ASPM.*abled;'`
 
     fprintd = {
-      enable = true;
+      enable = false;
       package = pkgs.fprintd.override { libfprint = mypkgs.libfprint-fpc; };
     };
-    udev.packages = [ mypkgs.libfprint-fpc ];
+    # udev.packages = [ mypkgs.libfprint-fpc ];
   };
 }
+/*
+      package = (pkgs.fprintd.override { libfprint = mypkgs.libfprint-fpc; }).overrideAttrs {
+        doCheck = false;
+        doInstallCheck = false;
+      };
+*/

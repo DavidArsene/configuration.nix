@@ -1,6 +1,8 @@
 {
   config,
   pkgs,
+  nix-custom,
+  self,
   ...
 }:
 {
@@ -41,10 +43,13 @@
     };
 
     channel.enable = false;
+    # Not worth it. Works, but all programs accessing nix
+    # (like fastfetch or nixd) end up requiring sudo.
+    # NOTE: move to minify? (after making it usable)
+    # daemon.enable = false;
 
-    # package = pkgs.lix;
-    package = pkgs.nixVersions.latest;
-    # package = nix-custom.packages.${pkgs.stdenv.system}.default;
+    # package = pkgs.nixVersions.latest;
+    package = nix-custom.packages.${pkgs.stdenv.system}.default;
     # Modernizing ends here.
 
     buildMachines = [
@@ -101,26 +106,19 @@
 
   environment.etc = {
     #? A link to the version of the config used to build this system.
-    # "source".source = self;
+    "source".source = self;
   };
 
   system.nixos.label = config.system.nixos.release;
-  # system.nixos.extraLSBReleaseArgs = {
-  #   LSB_VERSION = "Unstable"; # TODO: fix
-  #   DISTRIB_DESCRIPTION = "NixOS Enterprise ${config.system.nixos.release}";
-  # };
 
-  environment.localBinInPath = true;
-
-  # TODO: Requires systemd in initrd, ruins my initrd-less boot plans
   system.etc.overlay.enable = true;
   # system.etc.overlay.mutable = false; # FIXME:
   system.nixos-init.enable = true;
-  # boot.initrd.systemd.enable = true;
-  # boot.initrd.systemd.emergencyAccess = config.users.users.${config.users.myself}.hashedPassword;
+  boot.initrd.systemd.emergencyAccess = config.users.users.${config.users.myself}.hashedPassword;
   # boot.initrd.clevis.enable = true;
   boot.initrd.checkJournalingFS = true;
   services.userborn.enable = true;
+  services.userborn.importLegacyState = false;
 
   comment.nixpkgs.config = {
     #? Would replace the boring "-source" suffix
